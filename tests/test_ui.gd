@@ -1,0 +1,235 @@
+extends SceneTree
+var failures := 0
+var checks := 0
+var ui: Control
+
+func _initialize() -> void:
+	call_deferred("run")
+
+func check(condition: bool, name: String) -> void:
+	checks += 1
+	if condition:
+		print("PASS ", name)
+	else:
+		failures += 1
+		push_error("FAIL " + name)
+
+func press(path: String) -> void:
+	ui.get_node(path).pressed.emit()
+
+func escape() -> void:
+	var event := InputEventKey.new()
+	event.keycode = KEY_ESCAPE
+	event.pressed = true
+	ui._unhandled_key_input(event)
+
+func run() -> void:
+	ui = load("res://main.tscn").instantiate()
+	root.add_child(ui)
+	await process_frame
+	check(ui.page == "Home", "Initial home")
+	check(ui.get_node("Rooms/Join0").get_theme_color("font_focus_color").r < 0.3, "Secondary focused text contrast")
+	check(ui.get_node("Home/Start").get_theme_color("font_focus_color").r > 0.9, "Primary focused text contrast")
+	check(ui.get_node("Home/Start").size == Vector2(432,76), "Start exact size 432x76")
+	check(ui.get_node("DisplayBackground").size == Vector2(1920,1080), "Display fills entire canvas")
+	check(ui.get_node("Home/Start").position == Vector2(96,400), "Start exact position 96,400")
+	check(ui.get_node("DisplayBackground").position == Vector2.ZERO, "Display starts at canvas origin")
+	check(ui.get_node("DisplayBackground").get_index() < ui.get_node("Home").get_index(), "Display rendered beneath function area")
+	check(ui.get_node("Home/GodotIcon").texture != null, "Official Godot icon loaded")
+	check(ui.get_node("Home/GodotIcon").position.x + ui.get_node("Home/GodotIcon").size.x == 528, "Title and icon end at button right edge")
+	check(ui.get_node("Status/Engine").text.contains(Engine.get_version_info()["string"]), "Debug shows actual engine version")
+	check(ui.get_node("Status/Scene").text == "UI  /  res://main.tscn :: Home", "Initial UI scene id is actual path and screen")
+	check(not ui.has_node("Brand") and not ui.has_node("Edition") and not ui.has_node("Footer") and not ui.has_node("Version") and not ui.has_node("Rule"), "Old scattered edge information removed")
+	check(not ui.has_node("Home/Player0"), "No player cards on home")
+	check(not ui.get_node("Lobby").visible, "Ready area hidden before entering a room")
+	var home_buttons := ["Start", "Join", "Protocol", "Settings", "Exit"]
+	for i in range(home_buttons.size()):
+		check(ui.get_node("Home/" + home_buttons[i]).position == Vector2(96,400 + i*94), "Vertical button order " + home_buttons[i])
+	press("Home/Protocol")
+	check(ui.modal_kind == "Protocol", "Gameplay protocol overlay opens")
+	check(ui.get_node("Home/Start").focus_mode == Control.FOCUS_NONE, "Protocol traps background focus")
+	press("Modal/Protocol/Option1")
+	check(ui.selected_protocol == 1, "Select second mock protocol")
+	check(ui.get_node("Status/Protocol").text == "PROTOCOL  /  MOCK · 派对示例 B", "Consolidated protocol indicator updates with explicit MOCK status")
+	check(ui.get_node("Status/Scene").text.ends_with("Home/Protocol"), "Protocol overlay scene identifier updates")
+	press("Modal/Protocol/Close")
+	check(ui.modal_kind.is_empty(), "Protocol Done dismisses")
+	press("Home/Protocol")
+	check(ui.selected_protocol == 1, "Protocol selection survives reopen")
+	escape()
+	check(ui.modal_kind.is_empty(), "Escape dismisses protocol")
+	press("Home/Protocol")
+	press("Modal/Protocol/Option0")
+	press("Modal/Protocol/Close")
+	press("Home/Start")
+	check(ui.modal_kind == "Create" and ui.page == "Home", "Create opens secondary picker before lobby")
+	check(ui.get_node("Home/Start").focus_mode == Control.FOCUS_NONE, "Create traps background focus")
+	press("Modal/Create/Dropdown/Scroll/Items/Option2")
+	check(ui.selected_game == 2, "Choose third main game")
+	press("Modal/Create/Cancel")
+	check(ui.page == "Home" and ui.modal_kind.is_empty(), "Cancel picker does not create room")
+	press("Home/Start")
+	check(ui.selected_game == 2, "Picker retains selection")
+	press("Modal/Create/Confirm")
+	check(ui.game_index == 2 and ui.get_node("Lobby/Game").text.contains("欢乐乱斗"), "Selected game carried to room")
+	press("Lobby/Back")
+	press("Home/Start")
+	escape()
+	check(ui.modal_kind.is_empty() and ui.page == "Home", "Escape picker does not create room")
+	press("Home/Start")
+	press("Modal/Create/Dropdown/Scroll/Items/Option0")
+	press("Modal/Create/Confirm")
+	check(ui.page == "Lobby" and ui.get_node("Lobby").visible, "Create lobby navigation")
+	check(ui.get_node("Status/Scene").text.ends_with(":: Lobby"), "Lobby scene identifier updates")
+	check(ui.get_node("Lobby/ReadyAreaTitle").is_visible_in_tree(), "Ready area visible after entering room")
+	check(not ui.get_node("Lobby/Ready").get_global_rect().intersects(ui.get_node("Status").get_global_rect()), "Lobby ready control does not overlap debug panel")
+	check(ui.get_node("Lobby/SlotName0").text == "你 · 房主", "Host role")
+	check(ui.get_node("Lobby/PlayerCount").text == "3 / 8 人", "Host room capacity eight")
+	for i in range(8):
+		check(ui.has_node("Lobby/Slot%d" % i), "Player slot %d exists" % i)
+		check(ui.get_node("Lobby/Slot%d" % i).position.x == 96, "Player slots vertical %d" % i)
+	check(ui.get_node("Lobby/Ready").text == "开始游戏", "Host primary start")
+	press("Lobby/Game")
+	check(ui.game_index == 1, "Game field changes")
+	press("Lobby/Map")
+	check(ui.map_index == 1, "Map field changes")
+	press("Lobby/Rounds")
+	check(ui.rounds_index == 2, "Round field changes")
+	press("Lobby/Advanced")
+	check(ui.modal_kind == "Advanced", "Advanced settings opens")
+	ui.get_node("Modal/Advanced/Teams").button_pressed = true
+	press("Modal/Advanced/Close")
+	check(ui.get_node("Modal/Advanced/Teams").button_pressed, "Advanced value retained")
+	press("Lobby/ImportPreset")
+	check(ui.modal_kind == "Preset" and ui.get_node("Modal/Preset/Apply").visible, "Import sample preview")
+	press("Modal/Preset/Apply")
+	check(ui.game_index == 1 and ui.map_index == 1 and ui.rounds_index == 0, "Preset applies example")
+	press("Lobby/ExportPreset")
+	check(not ui.get_node("Modal/Preset/Apply").visible and ui.get_node("Modal/Preset/Body").text.contains("合作挑战"), "Export current preview")
+	press("Modal/Preset/Close")
+	press("Lobby/Ready")
+	check(ui.get_node("Toast").visible, "Start demo feedback")
+	press("Lobby/Back")
+	check(ui.page == "Home" and not ui.get_node("Toast").visible, "Leave clears transient feedback")
+	press("Home/Join")
+	check(ui.page == "Rooms", "Room browser navigation")
+	check(ui.get_node("Status/Scene").text.ends_with(":: Rooms"), "Rooms scene identifier updates")
+	check(ui.get_node("Rooms/Join2").disabled, "Full room cannot be joined")
+	press("Rooms/Join0")
+	check(ui.page == "Lobby" and ui.get_node("Lobby/LobbyTitle").text == "周五快乐局", "Join first room")
+	check(ui.get_node("Lobby/SlotName1").text == "你 · 玩家", "Joined player role")
+	check(ui.get_node("Lobby/PlayerCount").text == "4 / 8 人", "Guest room eight capacity")
+	check(ui.get_node("Lobby/Game").disabled and ui.get_node("Lobby/ImportPreset").disabled, "Guest cannot edit host settings")
+	check(ui.get_node("Lobby/Ready").text == "准备", "Guest initial ready action")
+	press("Lobby/Ready")
+	check(ui.guest_ready and ui.get_node("Lobby/Ready").text == "取消准备", "Guest ready action toggles")
+	check(ui.get_node("Lobby/SlotStatus1").text == "已准备", "Guest player row updates")
+	press("Lobby/Ready")
+	check(not ui.guest_ready and ui.get_node("Lobby/SlotStatus1").text == "未准备", "Guest can cancel ready")
+	press("Lobby/Advanced")
+	check(ui.get_node("Modal/Advanced/Teams").disabled, "Guest advanced read only")
+	escape()
+	escape()
+	check(ui.page == "Home", "Escape returns home")
+	press("Home/Join")
+	press("Rooms/Join1")
+	check(ui.get_node("Lobby/LobbyTitle").text == "再来一局", "Join second room")
+	press("Lobby/Back")
+	press("Home/Start")
+	press("Modal/Create/Confirm")
+	check(ui.get_node("Lobby/SlotName1").text == "小林", "New host lobby resets prior participant")
+	press("Lobby/Back")
+	var master_before := AudioServer.get_bus_volume_db(0)
+	for i in range(3):
+		press("Home/Settings")
+		check(ui.page == "Settings" and not ui.get_node("Modal").visible, "Settings independent page %d" % i)
+		check(not ui.get_node("Home").visible, "Home hidden in settings %d" % i)
+		check(ui.get_node("Settings/Tabs").current_tab == 0, "Voice default tab %d" % i)
+		ui.get_node("Settings/Tabs/Voice/Padding/Content/VolumeRow/Volume").value = 35
+		check(ui.get_node("Settings/Tabs/Voice/Padding/Content/VolumeRow/VolumeValue").value == 35, "Input percentage updates %d" % i)
+		check(AudioServer.get_bus_volume_db(0) == master_before, "Input slider does not change Master %d" % i)
+		escape()
+		check(ui.page == "Home", "Escape returns from settings %d" % i)
+	press("Home/Settings")
+	check(ui.get_node("Settings/Tabs/Voice/Padding/Content/VolumeRow/Volume").value == 35, "Input gain session persistence")
+	var device: OptionButton = ui.get_node("Settings/Tabs/Voice/Padding/Content/DeviceRow/Device")
+	check(device.item_count >= 1 and device.get_item_metadata(0) == "Default", "Device dropdown has explicit default option")
+	device.item_selected.emit(0)
+	check(ui.selected_input_device == "Default", "Device selection stored without capture")
+	check(not ProjectSettings.get_setting("audio/driver/enable_input", false), "Microphone capture disabled")
+	ui.get_node("Settings/Tabs").current_tab = 1
+	check(ui.get_node("Settings/Tabs/UI").is_visible_in_tree() and not ui.get_node("Settings/Tabs/Voice").is_visible_in_tree(), "UI tab replaces voice contents")
+	ui.get_node("Settings/Tabs/UI/Padding/Content/VolumeRow/Volume").value = 42
+	check(ui.get_node("Settings/Tabs/UI/Padding/Content/VolumeRow/VolumeValue").value == 42, "UI prototype gain percentage")
+	check(AudioServer.get_bus_volume_db(0) == master_before, "UI prototype does not change Master")
+	check(not ui.has_node("Settings/Title") and not ui.has_node("Settings/Subtitle"), "Removed settings top title and hint")
+	check(ui.get_node("Settings/Tabs").size.y >= 800, "Settings uses more vertical canvas")
+	for tab in ["Voice", "UI", "About"]:
+		check(not ui.has_node("Settings/Tabs/" + tab + "/Heading"), "No redundant tab heading " + tab)
+	for path in ["Settings/Tabs/Voice/Padding/Content/VolumeRow/VolumeValue", "Settings/Tabs/UI/Padding/Content/VolumeRow/VolumeValue", "Settings/Tabs/UI/Padding/Content/WindowDetails/Rows/WidthRow/Width", "Settings/Tabs/UI/Padding/Content/WindowDetails/Rows/HeightRow/Height"]:
+		var spin: SpinBox = ui.get_node(path)
+		var expected := 81.0 if path.ends_with("VolumeValue") else 801.0
+		spin.get_line_edit().text = "80.6" if path.ends_with("VolumeValue") else "800.6"
+		spin.apply()
+		check(spin.value == expected, "Keyboard decimal rounds to integer " + path)
+		spin.get_line_edit().text = "99999"
+		spin.apply()
+		check(spin.value == spin.max_value, "Numeric upper clamp " + path)
+		spin.get_line_edit().text = "-5"
+		spin.apply()
+		check(spin.value == spin.min_value, "Numeric lower clamp " + path)
+		spin.get_line_edit().text = "invalid"
+		spin.apply()
+		check(spin.value == spin.min_value, "Invalid text keeps valid number " + path)
+	check(ui.get_node("Settings/Tabs/UI/Padding/Content/VolumeRow/Volume").value == 0, "Typed volume synchronizes slider")
+	var modes: OptionButton = ui.get_node("Settings/Tabs/UI/Padding/Content/DisplayRow/DisplayMode")
+	check(modes.item_count == 3 and modes.get_item_text(2) == "无边框窗口", "Three display modes")
+	ui.set_display_mode(1)
+	ui.get_node("Settings/Tabs/UI/Padding/Content/WindowOptions").button_pressed = true
+	check(ui.get_node("Settings/Tabs/UI/Padding/Content/WindowDetails").visible, "Windowed arrow expands nested fields")
+	ui.get_node("Settings/Tabs/UI/Padding/Content/WindowOptions").button_pressed = false
+	check(not ui.get_node("Settings/Tabs/UI/Padding/Content/WindowDetails").visible, "Windowed arrow collapses fields")
+	ui.set_display_mode(0)
+	check(not ui.get_node("Settings/Tabs/UI/Padding/Content/WindowOptions").visible, "Fullscreen hides window suboptions")
+	ui.set_display_mode(2)
+	check(not ui.get_node("Settings/Tabs/UI/Padding/Content/WindowDetails").visible, "Borderless hides window suboptions")
+	ui.set_display_mode(1)
+	ui.get_node("Settings/Tabs/UI/Padding/Content/WindowOptions").button_pressed = true
+	ui.get_node("Settings/Tabs/UI/Padding/Content/WindowDetails/Rows/WidthRow/Width").value = 1280
+	ui.get_node("Settings/Tabs/UI/Padding/Content/WindowDetails/Rows/HeightRow/Height").value = 720
+	await process_frame
+	press("Settings/Tabs/UI/Padding/Content/WindowDetails/Rows/Apply")
+	check(ui.get_node("Toast/Text").text.contains("1280 × 720"), "Resolution applies intentionally")
+	var games: VBoxContainer = ui.get_node("Modal/Create/Dropdown/Scroll/Items")
+	check(games.get_child_count() == 12 and ui.get_node("Modal/Create/Dropdown").size.y == 280, "Scrollable bounded native game dropdown")
+	ui.open_modal("Create")
+	press("Modal/Create/Game")
+	await process_frame
+	check(ui.get_node("Modal/Create/Dropdown").visible, "Game button opens dropdown")
+	check(ui.get_node("Modal/Create/Dropdown/Scroll").get_v_scroll_bar().max_value > 600, "Game list overflows bounded scrolling viewport")
+	escape()
+	check(not ui.get_node("Modal/Create/Dropdown").visible and ui.modal_kind == "Create", "Escape dismisses only dropdown first")
+	press("Modal/Create/Game")
+	press("Modal/Create/Dropdown/Scroll/Items/Option11")
+	check(ui.selected_game == 11 and not ui.get_node("Modal/Create/Dropdown").visible, "Last game selectable and dropdown closes")
+	ui.close_modal()
+	ui.get_node("Settings/Tabs").current_tab = 2
+	check(ui.get_node("Settings/Tabs/About").is_visible_in_tree(), "About tab content visible")
+	check(ui.get_node("Settings/Tabs/About/Padding/Content/EngineRow/Engine").text.contains(Engine.get_version_info()["string"]), "About reports actual engine")
+	check(ui.get_node("Status/Scene").text.ends_with("Settings/About"), "Debug follows settings tab")
+	press("Settings/Back")
+	check(ui.page == "Home", "Settings Back returns home")
+	press("Home/Exit")
+	check(ui.modal_kind == "Confirm", "Exit asks confirmation")
+	press("Modal/Confirm/Cancel")
+	check(ui.modal_kind.is_empty() and ui.page == "Home", "Cancel exit preserves app")
+	escape()
+	check(ui.modal_kind == "Confirm", "Escape on home asks confirmation")
+	escape()
+	check(ui.modal_kind.is_empty(), "Escape cancels exit")
+	check(ui.get_node("Home/Start").focus_mode == Control.FOCUS_ALL, "Background keyboard focus restored")
+	print("RESULT: %d checks, %d failures" % [checks,failures])
+	await create_timer(3.1).timeout
+	ui.queue_free()
+	await process_frame
+	quit(1 if failures else 0)

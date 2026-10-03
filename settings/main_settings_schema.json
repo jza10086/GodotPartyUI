@@ -1,0 +1,225 @@
+[
+  {
+    "id": "Voice",
+    "title": "语音设置",
+    "options": [
+      {
+        "id": "voice.Device",
+        "type": "select",
+        "label": "语音输入设备",
+        "node_name": "DeviceRow",
+        "control_name": "Device",
+        "label_name": "DeviceLabel",
+        "value": 0,
+        "row_height": 96
+      },
+      {
+        "id": "voice.DeviceNote",
+        "type": "note",
+        "node_name": "DeviceNote",
+        "text": "系统默认选项；未启用麦克风",
+        "height": 38,
+        "font_size": 21
+      },
+      {
+        "id": "voice.DeviceDivider",
+        "type": "divider",
+        "node_name": "DeviceDivider"
+      },
+      {
+        "id": "voice.Volume",
+        "type": "slider",
+        "label": "输入音量",
+        "node_name": "VolumeRow",
+        "control_name": "Volume",
+        "label_name": "VolumeLabel",
+        "value": 80.0,
+        "row_height": 96,
+        "min": 0,
+        "max": 100,
+        "step": 1.0,
+        "suffix": "%",
+        "number_name": "VolumeValue"
+      },
+      {
+        "id": "voice.VolumeDivider",
+        "type": "divider",
+        "node_name": "VolumeDivider"
+      },
+      {
+        "id": "voice.Note",
+        "type": "note",
+        "node_name": "Note",
+        "text": "原型：设备与输入增益仅保存选择，不采集或传输语音。\n输入音量不改变扬声器或 Master 输出音量。",
+        "height": 90,
+        "font_size": 23
+      }
+    ]
+  },
+  {
+    "id": "UI",
+    "title": "UI 设置",
+    "options": [
+      {
+        "id": "ui.Volume",
+        "type": "slider",
+        "label": "UI 音效音量",
+        "node_name": "VolumeRow",
+        "control_name": "Volume",
+        "label_name": "VolumeLabel",
+        "value": 70.0,
+        "row_height": 96,
+        "min": 0,
+        "max": 100,
+        "step": 1.0,
+        "suffix": "%",
+        "number_name": "VolumeValue"
+      },
+      {
+        "id": "ui.VolumeDivider",
+        "type": "divider",
+        "node_name": "VolumeDivider"
+      },
+      {
+        "id": "ui.DisplayMode",
+        "type": "select",
+        "label": "显示方式",
+        "node_name": "DisplayRow",
+        "control_name": "DisplayMode",
+        "label_name": "DisplayModeLabel",
+        "value": 0,
+        "row_height": 96
+      },
+      {
+        "id": "ui.DisplayDivider",
+        "type": "divider",
+        "node_name": "DisplayDivider"
+      },
+      {
+        "id": "window_options",
+        "type": "group",
+        "label": "窗口化选项",
+        "node_name": "WindowOptions",
+        "details_name": "WindowDetails",
+        "expanded": false,
+        "visible_when": {
+          "id": "ui.DisplayMode",
+          "equals": 1
+        },
+        "children": [
+          {
+            "id": "window.Width",
+            "type": "number",
+            "label": "分辨率宽度",
+            "node_name": "WidthRow",
+            "control_name": "Width",
+            "label_name": "WidthLabel",
+            "value": 1280.0,
+            "row_height": 88,
+            "label_width": 338,
+            "min": 640.0,
+            "max": 7680.0,
+            "step": 1.0,
+            "suffix": "px"
+          },
+          {
+            "id": "window.WidthDivider",
+            "type": "divider",
+            "node_name": "WidthDivider"
+          },
+          {
+            "id": "window.Height",
+            "type": "number",
+            "label": "分辨率高度",
+            "node_name": "HeightRow",
+            "control_name": "Height",
+            "label_name": "HeightLabel",
+            "value": 720.0,
+            "row_height": 88,
+            "label_width": 338,
+            "min": 360.0,
+            "max": 4320.0,
+            "step": 1.0,
+            "suffix": "px"
+          },
+          {
+            "id": "window.HeightDivider",
+            "type": "divider",
+            "node_name": "HeightDivider"
+          },
+          {
+            "id": "window.RangeNote",
+            "type": "note",
+            "node_name": "RangeNote",
+            "text": "宽 640–7680 px · 高 360–4320 px · 精度 1 px",
+            "height": 42,
+            "font_size": 21
+          },
+          {
+            "id": "apply_resolution",
+            "type": "action",
+            "node_name": "Apply",
+            "label": "应用分辨率"
+          }
+        ]
+      },
+      {
+        "id": "ui.HelpDivider",
+        "type": "divider",
+        "node_name": "HelpDivider"
+      },
+      {
+        "id": "ui.Note",
+        "type": "note",
+        "node_name": "Note",
+        "text": "数值可直接输入，按 Enter 或移开焦点后四舍五入。\n音量精度 1%；UI 音效为占位，显示偏好仅保留当前会话。",
+        "height": 90,
+        "font_size": 23
+      }
+    ]
+  },
+  {
+    "id": "About",
+    "title": "关于",
+    "options": [
+      {
+        "id": "about.Engine",
+        "type": "label",
+        "label": "引擎版本",
+        "node_name": "EngineRow",
+        "control_name": "Engine",
+        "label_name": "EngineLabel",
+        "value": "Godot 4.7.2",
+        "row_height": 96
+      },
+      {
+        "id": "about.EngineDivider",
+        "type": "divider",
+        "node_name": "EngineDivider"
+      },
+      {
+        "id": "about.Description",
+        "type": "label",
+        "label": "项目说明",
+        "node_name": "DescriptionRow",
+        "control_name": "Description",
+        "label_name": "DescriptionLabel",
+        "value": "原生 Control UI · 灰阶线框交互原型\n房间、玩家、主游戏与玩法协议均为 MOCK 示例。\n尚未接入网络联机、真实主游戏或语音采集。",
+        "row_height": 160
+      },
+      {
+        "id": "about.DescriptionDivider",
+        "type": "divider",
+        "node_name": "DescriptionDivider"
+      },
+      {
+        "id": "about.Note",
+        "type": "note",
+        "node_name": "Note",
+        "text": "主游戏负责其房间设置；本页用于全局框架偏好。",
+        "height": 90,
+        "font_size": 23
+      }
+    ]
+  }
+]
