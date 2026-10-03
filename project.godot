@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Godot Party · 主界面原型"
+config/name="GodotPartyUI"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
