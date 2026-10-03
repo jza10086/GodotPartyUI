@@ -127,6 +127,7 @@ godot --headless --path . --script res://tests/test_settings_demo.gd
 godot --headless --path . --script res://tests/test_settings_api_review.gd
 godot --headless --path . --script res://tests/test_segmented_toggle.gd
 godot --headless --path . --script res://tests/test_settings_dividers.gd
+godot --headless --path . --script res://tests/test_settings_connected_dividers.gd
 godot --headless --path . --script res://tests/test_room_profile.gd
 godot --headless --path . --script res://tests/test_keybindings.gd
 godot --headless --path . --script res://tests/test_scene_components.gd
@@ -145,3 +146,7 @@ godot --path . --resolution 1920x1080 -- --capture-all
 原 Godot 4.7.2 headless 导航与数值测试 150 项、设置布局和滚动测试 58 项，共 208 项通过：8 个纵向玩家位、8 人容量、房主 / 玩家权限、准备 / 取消准备、游戏 / 地图 / 回合切换、高级设置、预设模拟应用和导出预览，以及全画幅背景层级、精确尺寸与按钮顺序、官方图标加载、实际引擎 / 场景 / MOCK 协议状态联动、旧边角信息移除、大厅操作区不遮挡、主界面无玩家卡片、进入房间才显示预备区、协议切换 / 重开 / 关闭、创建 / 加入 / 离开、创建弹窗的选择 / 取消 / Esc / 重开 / 确认传值、独立设置页默认语音与三个页签、设备默认选项、输入数值保留、输入和 UI 音量不改 Master、麦克风采集禁用、多次设置返回、弹层焦点隔离、满员禁用和退出取消。额外覆盖数值键盘输入的四舍五入、上下界限制、无效文本、滑块同步、显示模式、二级选项显隐、显式分辨率应用与 12 项限高下拉菜单、实际内容溢出与打开 / 选择 / Esc 收起流程。单独退出测试触发真实关闭信号。真实渲染截图需要显示服务器；headless 测试不代表视觉检查。F12 保存 1920×1080 原生视口，与当前窗口缩放无关。
 
 设置滚动回归：展开 UI 子项时内容自然高度 861 px、视口 736 px，滚动范围 125 px；检查所有行中心 y 坐标一致、横向无裁切、滚轮经过数值框不改值、内容确实移动、三个固定区域不移动、滚到底可完整阅读尾部说明。另将页签高度临时减到 520 px 验证更小视口的滚动与末尾可达；测试后不改变正式布局。语音与关于内容较少，不强制制造溢出。
+
+### 连续层级分割线
+
+`divider.tscn` 的 `HierarchyConnection` 只把横线延伸到当前层的 `HierarchyLine`，不改变行布局或点击区域。`group_details.tscn` 仍负责缩进、竖线位置、宽度与颜色；脚本按实际布局连接下一个可见分割线，末尾嵌套组共享祖先的收尾边界，无收尾横线时止于父组底部。空子组不显示竖线。几何回归覆盖三层嵌套、显式分隔、折叠、条件显隐、重建、编辑间距/缩进、缩放及滚动。
