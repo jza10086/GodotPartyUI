@@ -418,7 +418,8 @@ func apply_binding(value: Variant, id: String) -> void:
 - `tab_content.tscn`：页签的 ScrollContainer、Padding、Content，调内边距和行间距
 - `label_row.tscn`、`select_row.tscn`、`number_row.tscn`、`slider_row.tscn`、`toggle_row.tscn`：名称与值控件、行高、列宽、字号和对齐；滑块行包含独立精确数值框
 - `action.tscn`、`note.tscn`、`divider.tscn`、`group.tscn`：动作、说明、水平分隔线与展开按钮
-- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 是独立 Line2D；可调 x、颜色、粗细。脚本只让末点 y 跟随容器高度，折叠时整组隐藏；嵌套组各有一条线
+- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 为竖线，`HeaderConnection` 从展开箭头斜向接入竖线，`BranchTemplate` 为隐藏的短横线模板；均可编辑颜色、粗细，竖线还可编辑 x。运行时根据实际排版把竖线向上接到展开箭头中心，并在每个可见子项（含说明）的行中心连接到内容左边缘。`Branches` 中的线由模板生成，折叠/条件隐藏时同步隐藏；空组不画悬空竖线
+- `divider.tscn`：根 ColorRect 保留原布局、颜色与 API，通过透明 `self_modulate` 只隐藏根节点本身的绘制，子节点 `Stroke` 绘制实际分隔线。一般子行分隔线接本层竖线；紧随展开区的收尾线从最深末级竖线开始，不再向左穿过外层缩进。不要删除 Stroke、BranchTemplate、Branches、HeaderConnection 或 HierarchyLine 节点
 - `keybinding.tscn`、`keybinding_group.tscn`、`bindings_header.tscn`：三列按键布局。三者 Function 列宽应保持一致；运行时只减去实际祖先缩进，以保持主/次按键列跨层级对齐
 - `binding_capture.tscn`：遮罩、面板、标题、提示、清除与取消按钮，均是可视节点
 - `tooltip.tscn`：提示文本水平和垂直居中；按键行控件通过 tooltip 脚本实例化，脚本只填文字

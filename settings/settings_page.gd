@@ -331,6 +331,7 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 		details.name = spec.get("details_name", id.validate_node_name() + "Details")
 		parent.add_child(details)
 		entry.details = details
+		details.header_control = entry.expander
 		_build_options(details.get_node("Rows"), spec.get("children", []))
 	if type == "keybinding":
 		entry.value = spec.get("value", [0, 0]).duplicate(true)
