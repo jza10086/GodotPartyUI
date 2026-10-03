@@ -14,7 +14,9 @@ godot --path . res://examples/settings_demo.tscn
 
 从主菜单按 F10 也可以进入示例，示例中按 F10 返回主菜单。还可使用 `godot --path . -- --settings-demo` 直接进入。示例中 F12 保存真实视口截图到 `screenshots/17_settings_api_demo.png`。
 
-示例覆盖所有设置项类型；改值会更新底部预览、只读结果行并打印回调，重置按钮演示静默赋值，返回按钮在该示例中用于重建页面。示例逻辑位于 `examples/settings_demo.gd`。工程主菜单的设置数据位于 `settings/main_settings_schema.json`，业务回调由 `main.gd` 接入。JSON 适合保存静态结构；`Callable` 不能放入 JSON，需要在脚本中补上。
+示例另有「按键绑定」页签，可修改主 / 次按键、展开移动分组和跳跃子操作；录入结束后按动作键，底部预览会显示实际 InputMap 动作名称。若按钮仍有焦点，Space / Enter 等 UI 键可能先被控件消费，可点击说明区域后再试。
+
+示例覆盖所有设置项类型；改值会更新底部预览、只读结果行并打印回调，重置按钮演示静默赋值，返回按钮在该示例中用于重建页面。示例逻辑位于 `examples/settings_demo.gd`。工程主菜单的设置数据位于 `settings/main_settings_schema.json`，业务回调由 `main.gd` 接入；第四个按键绑定页由 `settings/demo_bindings.gd` 程序化生成。JSON 适合保存静态结构；`Callable` 不能放入 JSON，需要在脚本中补上。
 
 ## 2. 最小接入示例
 
@@ -109,17 +111,23 @@ func _on_apply(_id: String) -> void:
 | --- | --- |
 | `configure(tabs: Array) -> bool` | 校验并重建整个页面。失败返回 `false`，原有页面和数值保持不变；读取 `last_error` 查看原因 |
 | `add_tab(id: String, title: String) -> bool` | 动态添加页签 |
-| `add_option(tab_id: String, spec: Dictionary, parent_group: String = "") -> bool` | 向页签添加一项。省略 `parent_group` 时添加到页签顶层；否则添加到指定分组 |
-| `get_value(id: String) -> Variant` | 获取单项当前值；未知 ID 或无值项返回 `null` |
+| `add_option(tab_id: String, spec: Dictionary, parent_group: String = "") -> bool` | 向页签添加一项。省略 `parent_group` 时添加到页签顶层；否则添加到指定分组或具有 `children` 的按键行 |
+| `get_value(id: String) -> Variant` | 获取单项当前值（数组 / 字典返回复制）；未知 ID 或无值项返回 `null` |
 | `get_values() -> Dictionary` | 获取当前设置值的深复制字典，以设置项 ID 为键 |
 | `set_value(id: String, value: Variant, notify: bool = false) -> bool` | 更新单项值和对应控件。默认不发送业务通知；需要通知时传 `true` |
 | `get_control(id: String) -> Control` | 获取设置项对应的原生控件；未知 ID 返回 `null` |
 | `get_number_control(id: String) -> SpinBox` | 获取 `number` 或 `slider` 的数值框；未知 ID 或其他类型返回 `null` |
+| `get_binding_control(id: String, slot: int) -> Button` | 获取按键行的主键（`0`）或次键（`1`）按钮；无效 ID / 槽位返回 `null` |
+| `get_expander(id: String) -> Button` | 获取分组或带子项按键行的展开按钮 |
+| `set_expanded(id: String, expanded: bool) -> bool` | 修改展开状态，不改变绑定或发出值回调 |
+| `begin_binding_capture(id: String, slot: int) -> bool` | 开始指定按键槽位的录入 |
+| `cancel_binding_capture() -> void` | 取消录入，保留原值 |
+| `is_capturing_binding() -> bool` | 是否正在录入按键 |
 | `clear() -> void` | 清空页签、设置项和当前值 |
 
 `last_error` 用于取得失败原因，应在方法返回 `false` 时读取。始终检查返回值，不要把无效输入当成已经应用。
 
-`get_values()` 包含 `label`、`select`、`toggle`、`number`、`slider` 的值；不包含 `note`、`divider`、`action`、`group`。分组的展开状态不是设置值。隐藏或折叠不会删除已有子项值。
+`get_values()` 包含 `label`、`select`、`toggle`、`number`、`slider`、`keybinding` 的值；不包含 `note`、`divider`、`action`、`group`、`bindings_header`。分组的展开状态不是设置值。隐藏或折叠不会删除已有子项值。
 
 公共信号：
 
@@ -157,7 +165,7 @@ if not settings.add_option("display", {
     push_error(settings.last_error)
 ```
 
-`parent_group` 使用分组设置项的全局 ID，而不是标题或节点路径。分组必须已经存在，并属于 `tab_id` 指定的页签。
+`parent_group` 使用分组设置项的全局 ID，而不是标题或节点路径。父项必须已经存在（分组或带 `children` 的按键行），并属于 `tab_id` 指定的页签。
 
 ## 4. 数据结构
 
@@ -189,6 +197,8 @@ if not settings.add_option("display", {
 | `note` | 说明文字 | `text` |
 | `divider` | 分隔线 | 只需 `id` 与 `type` |
 | `action` | 动作按钮 | `label`、`callback` |
+| `bindings_header` | 三列标题：功能名称 / 主按键 / 次要按键 | `id`、`type` |
+| `keybinding` | 双槽位按键绑定，可含折叠子项 | `label`、`value`、`callback`、`conflict_scope`、`children`、`expanded` |
 | `group` | 可展开的缩进子项组 | `label`、`children`、`expanded`、`visible_when` |
 
 `callback` 使用有效的 GDScript `Callable`，如方法名、`Callable` 对象或 lambda；不要填写方法名字符串并期待自动调用。可以省略回调，仅通过 `setting_changed` 信号集中处理。
@@ -284,13 +294,14 @@ if not settings.set_value("audio.volume", 60.0, true):
 ## 6. 边界与接入约定
 
 - **没有自动持久化。** 组件不自动读取或写入 `user://`、`ConfigFile` 或项目配置；调用方决定保存位置和格式
+- **按键由业务层应用。** 组件不调用 InputMap、不修改 `ui_*`；本工程示例只更新独立的 `party_demo_*` 动作，默认值由调用方在 `configure()` 成功后显式应用
 - **没有隐含的应用行为。** `set_value()` 修改组件状态，不会自行切换全屏、修改音频总线、采集麦克风或发送网络请求
 - **没有自动的应用/取消事务。** 若需要“编辑后应用”或“取消恢复”，由业务层保留已应用值和待应用值，再提供相应动作按钮
 - **结构变更会重建控件。** `configure()`、`add_tab()`、`add_option()` 成功后，应重新取得所需控件引用；不要长期持有旧设置控件。动态添加会保留已有值和分组展开状态，但不应依赖原控件实例或焦点/滚动位置保留
 - **校验失败不会部分替换页面。** 未知类型、重复 ID、错误分组/条件引用、非法数值范围和不在下拉选项内的值应作为配置错误处理；记录 `last_error` 后修正数据再重试
 - **优先使用 ID 接口。** `get_value()`、`set_value()` 和 `get_control()` 比硬编码场景树路径更适合插件化或复用
 - **复用时携带依赖。** 除 `settings_page.tscn/.gd` 外，还应保留场景引用的字体、图标等 `assets/` 资源，或改成自己的资源
-- **中文字体有字集范围。** 当前字体为 UI 字符子集，增加文案时应检查缺字；需要通用中文输入文案时可替换完整字体
+- **中文字体。** 当前资源使用完整 Noto Sans CJK SC；替换字体后应检查新增文案的字形覆盖
 
 
 ### 左右选项开关与动画
@@ -304,3 +315,95 @@ if not settings.set_value("audio.volume", 60.0, true):
 - 连续点击会从当前位置平滑转向最后一次选择；旧动画立即取消。重建 / 清空页面会停止旧控件动画
 - 动画采用相对位置，宽度变化不会让选中底块脱离对应半区；不改变原设置行对齐和滚动方式
 - 控件实现：`settings/segmented_toggle.gd`；回归测试：`tests/test_segmented_toggle.gd`
+
+
+## 7. 程序化按键绑定与三列布局
+
+`bindings_header` 和 `keybinding` 由同一套列宽规则布局，依次是「功能名称 / 主按键 / 次要按键」。主 / 次键可以独立点击修改。分组和按键行的 `children` 使用相同结构，支持嵌套展开 / 收起；名称缩进不会改变两个按键列的对齐。内容高度自然超出页签后滚动，无需空白占位。
+
+```gdscript
+var tab := {
+    "id": "bindings",
+    "title": "按键绑定",
+    "options": [
+        {"id": "bindings.header", "type": "bindings_header"},
+        {
+            "id": "bindings.movement", "type": "group",
+            "label": "移动", "expanded": true,
+            "children": [
+                {
+                    "id": "move_forward", "type": "keybinding",
+                    "label": "向前移动", "value": [KEY_W, KEY_UP],
+                    "conflict_scope": "global", "callback": apply_binding
+                },
+                {
+                    "id": "jump", "type": "keybinding",
+                    "label": "跳跃", "value": [KEY_SPACE, 0],
+                    "callback": apply_binding, "expanded": false,
+                    "children": [{
+                        "id": "air_dash", "type": "keybinding",
+                        "label": "空中冲刺", "value": [KEY_Q | KEY_MASK_CTRL, 0],
+                        "callback": apply_binding
+                    }]
+                }
+            ]
+        }
+    ]
+}
+if not settings.configure([tab]):
+    push_error(settings.last_error)
+
+# configure 不发通知；业务层自行决定何时应用初始状态。
+for id in ["move_forward", "jump", "air_dash"]:
+    apply_binding(settings.get_value(id), id)
+
+# 只修改次按键的示例：读取的是副本，必须 set_value 才会提交。
+var keys: Array = settings.get_value("move_forward")
+keys[1] = KEY_I
+if not settings.set_value("move_forward", keys, true):
+    push_error(settings.last_error)
+
+settings.set_expanded("jump", true)
+settings.get_binding_control("move_forward", 1).grab_focus()
+```
+
+### 值格式、通知与冲突
+
+- `value` 是两个整数构成的数组 `[主按键, 次要按键]`，`0` 表示未绑定；例如 `[KEY_W, KEY_UP]`、`[KEY_K | KEY_MASK_CTRL, 0]`
+- 整数对应 Godot 逻辑 `keycode` 与修饰键掩码，不是字符串、物理键扫描码、鼠标键或手柄键；支持 Ctrl / Alt / Shift / Meta 组合
+- `get_control(id)` 返回主按键按钮；次按键用 `get_binding_control(id, 1)`。带子项行的展开按钮用 `get_expander(id)`，不能把主键按钮当作展开按钮
+- 修改成功后先更新控件和数据，再通知 `Callable(value, id)` / `setting_changed(id, value)`。取消、无效输入、冲突和重复赋相同值均不发变化通知
+- 两个槽位不能使用相同的非空键；同一设置页内、同一 `conflict_scope` 的其他行也不能复用同一非空组合。默认范围是 `"global"`，折叠 / 隐藏行也参与冲突检查
+- 仅完整组合相同才冲突，例如 `K` 与 `Ctrl+K` 是不同绑定；不同范围允许复用（如 `"player1"` / `"player2"`），但同一行仍禁止主 / 次键重复
+- 冲突原子拒绝，不自动清空或抢占另一行；录入时保留原值并提示继续选择。通过 `configure`、`add_option` 或 `set_value` 传入无效绑定也会失败，应检查返回值及 `last_error`
+
+### 录入与保留键
+
+点击任一按键按钮后显示录入遮罩，提供清空 / 取消按钮。按 Esc 取消；Delete 或 Backspace 清空当前槽位；单独按 Ctrl / Alt / Shift / Meta 不会提交，等待与普通键组成组合。Esc / Delete / Backspace 和纯修饰键均为保留键；通过程序化初始化或 `set_value` 也会拒绝它们作为绑定（包括带修饰键的 Esc / Delete / Backspace）。
+
+捕获中的按键由组件消费：按 Enter / Space / Tab / 方向键是在录入该键，而不是操作背景设置。Esc 只取消本次录入，不同时返回主菜单；F10 / F12 等快捷键也不应同时切换场景或截图。宿主的快捷键和动作预览放在 `_unhandled_key_input` / `_unhandled_input`，不要在 `_input` 中提前执行游戏动作；原始 `Input` 轮询不受事件消费影响，且提交当帧录入状态会关闭；因此游戏逻辑应在整个设置页打开期间暂停轮询动作，不能仅依赖 `is_capturing_binding()`。如果现有第三方代码必须使用 `_input`，也必须先检测 `settings.is_capturing_binding()` 并跳过快捷键逻辑；遮罩打开时不要由其他输入处理器抢先消费事件。
+
+### Callable 中应用到 InputMap
+
+组件只管理编辑状态，应用层负责 InputMap。读取动作时应使用精确修饰键匹配，例如 `event.is_action_pressed(action, false, true)` 或 `Input.is_action_pressed(action, true)`；默认非精确匹配会忽略额外修饰键，可能让 `K` 和 `Ctrl+K` 同时触发。原始 Input 轮询仍需在设置页打开期间暂停。下面只修改应用自有动作，避免覆盖 Godot UI 导航：
+
+```gdscript
+func apply_binding(value: Variant, id: String) -> void:
+    var action := "my_game_" + id
+    if not InputMap.has_action(action):
+        InputMap.add_action(action)
+    InputMap.action_erase_events(action)
+    for packed_key in value:
+        var code := int(packed_key)
+        if code == 0:
+            continue
+        var event := InputEventKey.new()
+        event.keycode = code & KEY_CODE_MASK
+        event.shift_pressed = bool(code & KEY_MASK_SHIFT)
+        event.ctrl_pressed = bool(code & KEY_MASK_CTRL)
+        event.alt_pressed = bool(code & KEY_MASK_ALT)
+        event.meta_pressed = bool(code & KEY_MASK_META)
+        InputMap.action_add_event(action, event)
+```
+
+可运行参考见 `settings/demo_bindings.gd`、`main.gd` 和 `examples/settings_demo.gd`。示例创建的 `party_demo_*` 动作只保留在当前进程，不调用 `ProjectSettings.save()`；重建示例会重新应用默认绑定，且回调计数仍从零开始。当前未实现文件持久化、鼠标 / 手柄重绑定或跨设置页实例的全局冲突管理。
