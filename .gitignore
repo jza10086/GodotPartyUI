@@ -1,2 +1,7 @@
 .godot/
 *.tmp
+
+# Generated captures and local test logs
+screenshots/
+tests/*_results.txt
+tests/results.txt
