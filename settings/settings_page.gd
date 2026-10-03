@@ -353,15 +353,22 @@ func _refresh_visibility() -> void:
 
 	# Only separate neighboring visible rows. Notes and explicit dividers are
 	# intentional section boundaries; neither receives an extra automatic line.
+	# Inside a fold, short tree branches replace ordinary row separators. Only
+	# the closing boundary of an expanded child group keeps its long stroke.
 	for items in _option_lists:
 		var previous_row := false
+		var previous_expanded := false
 		for item in items:
 			var entry: Dictionary = _entries[item.id]
 			var showing: bool = entry.root.visible
 			var is_row: bool = entry.spec.type not in ["note", "divider"]
 			if item.divider != null:
-				item.divider.visible = showing and is_row and previous_row
-			if showing: previous_row = is_row
+				var parent: Node = entry.root.get_parent()
+				var nested := parent.name == "Rows" and parent.get_parent().has_method("closing_spine_global")
+				item.divider.visible = showing and is_row and previous_row and (not nested or previous_expanded)
+			if showing:
+				previous_row = is_row
+				previous_expanded = entry.has("details") and entry.details.visible and not entry.details.get_visible_rows().is_empty()
 
 func _input(event: InputEvent) -> void:
 	if _route_binding_input(event): return

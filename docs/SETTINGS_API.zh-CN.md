@@ -205,7 +205,7 @@ if not settings.add_option("display", {
 
 ### 默认行分隔线
 
-`configure()` 和 `add_option()` 默认在相邻可见设置行之间生成 1 px 灰色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理；分组内任意层级的子行也自动分隔。
+`configure()` 和 `add_option()` 默认在顶层相邻可见设置行之间生成 1 px 灰色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理。折叠组内各层普通子行之间不再画自动长横线，仅由层级竖线和行中心短支线连接，与按键绑定一致；展开子组之后的收尾边界仍保留。
 
 显式 `divider` 与 `note` 是段落边界，不会叠加自动线，因此已有手动分隔布局保持原样。条件隐藏行不会留下多余线或首尾线；折叠分组时其内部线随子项隐藏。自动线不占用设置 ID，也不会出现在 `get_values()` 或触发回调。
 
@@ -418,8 +418,8 @@ func apply_binding(value: Variant, id: String) -> void:
 - `tab_content.tscn`：页签的 ScrollContainer、Padding、Content，调内边距和行间距
 - `label_row.tscn`、`select_row.tscn`、`number_row.tscn`、`slider_row.tscn`、`toggle_row.tscn`：名称与值控件、行高、列宽、字号和对齐；滑块行包含独立精确数值框
 - `action.tscn`、`note.tscn`、`divider.tscn`、`group.tscn`：动作、说明、水平分隔线与展开按钮
-- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 为竖线，`HeaderConnection` 从展开箭头斜向接入竖线，`BranchTemplate` 为隐藏的短横线模板；均可编辑颜色、粗细，竖线还可编辑 x。运行时根据实际排版把竖线向上接到展开箭头中心，并在每个可见子项（含说明）的行中心连接到内容左边缘。`Branches` 中的线由模板生成，折叠/条件隐藏时同步隐藏；空组不画悬空竖线
-- `divider.tscn`：根 ColorRect 保留原布局、颜色与 API，通过透明 `self_modulate` 只隐藏根节点本身的绘制，子节点 `Stroke` 绘制实际分隔线。一般子行分隔线接本层竖线；紧随展开区的收尾线从最深末级竖线开始，不再向左穿过外层缩进。不要删除 Stroke、BranchTemplate、Branches、HeaderConnection 或 HierarchyLine 节点
+- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 为竖线，`HeaderConnection` 从展开箭头中心垂直接入竖线，`BranchTemplate` 为隐藏的短横线模板；均可编辑颜色、粗细。运行时竖线的 x 与展开箭头中心严格对齐；按按钮当前状态及 align_to_largest_stylebox 解析真实样式边距，修改箭头样式左边距会同步移动连接线，不保留与箭头冲突的竖线 x。根据实际排版把竖线向上接到展开箭头中心，并在每个可见子项（含说明）的行中心连接到内容左边缘。`Branches` 中的线由模板生成，折叠/条件隐藏时同步隐藏；空组不画悬空竖线
+- `divider.tscn`：根 ColorRect 保留原布局、颜色与 API，通过透明 `self_modulate` 只隐藏根节点本身的绘制，子节点 `Stroke` 绘制实际分隔线。折叠组内普通相邻子行不显示自动长分隔线；顶层分隔和显式 divider 保留。紧随展开区的收尾线从最深末级竖线开始，不再向左穿过外层缩进。不要删除 Stroke、BranchTemplate、Branches、HeaderConnection 或 HierarchyLine 节点
 - `keybinding.tscn`、`keybinding_group.tscn`、`bindings_header.tscn`：三列按键布局。三者 Function 列宽应保持一致；运行时只减去实际祖先缩进，以保持主/次按键列跨层级对齐
 - `binding_capture.tscn`：遮罩、面板、标题、提示、清除与取消按钮，均是可视节点
 - `tooltip.tscn`：提示文本水平和垂直居中；按键行控件通过 tooltip 脚本实例化，脚本只填文字

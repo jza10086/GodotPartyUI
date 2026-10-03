@@ -11,6 +11,29 @@ func get_visible_rows() -> Array[Control]:
 			rows.append(child)
 	return rows
 
+# Godot Button draws using resolved margins (including StyleBox borders),
+# and normally reserves the largest margins across all interaction states.
+func _header_icon_center(header: Button, icon_size: Vector2) -> Vector2:
+	var style_names: Array[String] = ["normal", "hover", "pressed", "hover_pressed", "disabled"]
+	if header.get_theme_constant("align_to_largest_stylebox") == 0:
+		var current := "normal"
+		match header.get_draw_mode():
+			BaseButton.DRAW_HOVER: current = "hover"
+			BaseButton.DRAW_PRESSED: current = "pressed"
+			BaseButton.DRAW_HOVER_PRESSED: current = "hover_pressed" if header.has_theme_stylebox("hover_pressed") else "pressed"
+			BaseButton.DRAW_DISABLED: current = "disabled"
+		style_names = [current]
+	var left := 0.0
+	var top := 0.0
+	var bottom := 0.0
+	for style_name in style_names:
+		if not header.has_theme_stylebox(style_name): continue
+		var style := header.get_theme_stylebox(style_name)
+		left = maxf(left, style.get_margin(SIDE_LEFT))
+		top = maxf(top, style.get_margin(SIDE_TOP))
+		bottom = maxf(bottom, style.get_margin(SIDE_BOTTOM))
+	return Vector2(left + icon_size.x / 2.0, (header.size.y + top - bottom) / 2.0)
+
 func _process(_delta: float) -> void:
 	var line: Line2D = $HierarchyLine
 	var rows := get_visible_rows()
@@ -22,8 +45,8 @@ func _process(_delta: float) -> void:
 		branch.visible = false
 	if not line.visible or line.get_point_count() != 2: return
 	var start := line.get_point_position(0)
-	# Preserve the authored spine x and join the actual icon with a short
-	# slanted lead-in; their horizontal positions need not coincide.
+	# Align the entire spine with the actual arrow center. A hand-drawn
+	# annotation is not a diagonal lead-in; both segments must be collinear.
 	var header := header_control
 	if not is_instance_valid(header):
 		var previous := get_parent().get_child(get_index() - 1) if get_index() > 0 else null
@@ -31,8 +54,8 @@ func _process(_delta: float) -> void:
 		if header == null and previous != null: header = previous.get_node_or_null("Function") as Button
 	if is_instance_valid(header):
 		var icon_size := header.icon.get_size() if header.icon != null else Vector2.ZERO
-		var icon_center := Vector2(header.get_theme_stylebox("normal").get_content_margin(SIDE_LEFT) + icon_size.x / 2.0, header.size.y / 2.0)
-		start.y = line.to_local(header.get_global_transform() * Vector2(0, icon_center.y + icon_size.y)).y
+		var icon_center := _header_icon_center(header, icon_size)
+		start = line.to_local(header.get_global_transform() * Vector2(icon_center.x, icon_center.y + icon_size.y))
 		var lead: Line2D = $HeaderConnection
 		lead.points = PackedVector2Array([lead.to_local(header.get_global_transform() * icon_center), lead.to_local(line.to_global(start))])
 	else:

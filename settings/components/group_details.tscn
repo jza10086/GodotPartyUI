@@ -8,7 +8,7 @@ theme_override_constants/margin_left = 40
 script = ExtResource("1")
 
 [node name="HierarchyLine" type="Line2D" parent="."]
-points = PackedVector2Array(19.5, 0, 19.5, 96)
+points = PackedVector2Array(10, 0, 10, 96)
 width = 1.0
 default_color = Color(0.65, 0.65, 0.62, 1)
 
@@ -18,13 +18,13 @@ theme_override_constants/separation = 12
 
 [node name="BranchTemplate" type="Line2D" parent="."]
 visible = false
-points = PackedVector2Array(19.5, 0, 40, 0)
+points = PackedVector2Array(10, 0, 40, 0)
 width = 1.0
 default_color = Color(0.65, 0.65, 0.62, 1)
 
 [node name="Branches" type="Node2D" parent="."]
 
 [node name="HeaderConnection" type="Line2D" parent="."]
-points = PackedVector2Array(10, -64, 19.5, -48)
+points = PackedVector2Array(10, -64, 10, -48)
 width = 1.0
 default_color = Color(0.65, 0.65, 0.62, 1)

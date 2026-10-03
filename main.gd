@@ -307,7 +307,8 @@ func build_settings() -> void:
 	schema[1].options[2].items = [{"label": "全屏显示", "value": 0}, {"label": "窗口化", "value": 1}, {"label": "无边框窗口", "value": 2}]
 	schema[1].options[2].value = 1
 	schema[1].options[2].callback = func(value, _id): set_display_mode(value)
-	schema[1].options[4].children[5].callback = func(_id): apply_resolution()
+	for child in schema[1].options[4].children:
+		if child.id == "apply_resolution": child.callback = func(_id): apply_resolution()
 	schema[2].options[0].value = "GODOT " + str(Engine.get_version_info()["string"])
 	# Append after About to retain the existing Voice / UI / About tab indices.
 	schema.append(DemoBindings.make_tab(apply_binding))

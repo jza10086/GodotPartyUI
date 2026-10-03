@@ -78,6 +78,15 @@ func assert_closing(divider: Control, expected_details: Control, label: String) 
 
 func audit_details(details: Control, label: String) -> void:
 	var expected := visible_rows(details)
+	# Ordinary siblings within a fold have only short branches. An expanded
+	# child group may retain its closing boundary before the next sibling.
+	var previous: Control = null
+	for child in details.get_node("Rows").get_children():
+		if child.has_meta("automatic_row_divider"):
+			var closes_group := previous != null and is_details(previous) and not visible_rows(previous).is_empty()
+			check(not child.visible or closes_group, label + ": automatic long lines only close expanded child groups")
+		elif child is Control and child.visible:
+			previous = child
 	var line := spine(details)
 	var template := details.get_node_or_null("BranchTemplate") as Line2D
 	var header_line := details.get_node_or_null("HeaderConnection") as Line2D
@@ -113,10 +122,18 @@ func audit_details(details: Control, label: String) -> void:
 		if header_line != null:
 			check(header_line.get_point_count() == 2, label + ": header connection has exactly two endpoints")
 			if header_line.get_point_count() == 2:
-				var icon_x := header.get_theme_stylebox("normal").get_content_margin(SIDE_LEFT) + icon_size.x / 2.0
+				var left_margin := 0.0
+				for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+					if header.has_theme_stylebox(state):
+						left_margin = maxf(left_margin, header.get_theme_stylebox(state).get_margin(SIDE_LEFT))
+				if header.get_theme_constant("align_to_largest_stylebox") == 0:
+					left_margin = header.get_theme_stylebox("pressed").get_margin(SIDE_LEFT)
+				var icon_x := left_margin + icon_size.x / 2.0
 				var expected_icon := header.get_global_transform() * Vector2(icon_x, header.size.y / 2.0)
 				check(point_global(header_line, 0).distance_to(expected_icon) <= EPSILON, label + ": connection begins at the actual arrow center")
 				check(point_global(header_line, 1).distance_to(point_global(line, 0)) <= EPSILON, label + ": header connection ends exactly on the spine")
+				check(near(point_global(header_line, 0).x, point_global(header_line, 1).x), label + ": header connection is vertical, never a diagonal")
+				check(near(point_global(line, 0).x, expected_icon.x) and near(point_global(line, 1).x, expected_icon.x), label + ": entire spine is collinear with the actual arrow center")
 		check(point_global(line, 0).y < details.global_position.y, label + ": no gap between arrow and details")
 	for row in expected:
 		var branch := branches.get_node_or_null(NodePath(row.name)) as Line2D
@@ -130,6 +147,7 @@ func audit_details(details: Control, label: String) -> void:
 		var finish := point_global(branch, 1)
 		check(near(start.x, point_global(line, 0).x) and near(finish.x, row.global_position.x), label + ": " + str(row.name) + " branch joins spine to content edge")
 		check(near(start.y, middle_y(row)) and near(finish.y, middle_y(row)), label + ": " + str(row.name) + " branch uses the actual row center")
+		check(near(start.y, finish.y), label + ": " + str(row.name) + " branch remains horizontal")
 		check(branch.width == template.width and branch.default_color == template.default_color, label + ": " + str(row.name) + " uses editable template styling")
 	check(details.has_method("closing_spine_global"), label + ": closing-spine API exists")
 	if details.has_method("closing_spine_global"):
@@ -235,6 +253,14 @@ func run() -> void:
 	var header_line: Line2D = outer.get_node("HeaderConnection")
 	header_line.width = 2.5
 	header_line.default_color = Color(0.7, 0.2, 0.4, 0.9)
+	var header: Button = outer.get("header_control")
+	var header_style := header.get_theme_stylebox("normal").duplicate() as StyleBox
+	header_style.content_margin_left = 17.0
+	header.add_theme_stylebox_override("normal", header_style)
+	var hover_style := header.get_theme_stylebox("hover").duplicate() as StyleBox
+	hover_style.content_margin_left = 23.0
+	header.add_theme_stylebox_override("hover", hover_style)
+	header.add_theme_constant_override("align_to_largest_stylebox", 1)
 	page.get_control("outer_note").custom_minimum_size.y = 117
 	var explicit: ColorRect = page.get_control("explicit")
 	explicit.color = Color(0.4, 0.5, 0.6, 0.75)
@@ -242,7 +268,7 @@ func run() -> void:
 	page.scale = Vector2(1.25, 1.1)
 	page.size = Vector2(1500, 900)
 	await settle()
-	check(near(spine(outer).get_point_position(0).x, 31.5), "Authored spine x survives updates")
+	check(not near(spine(outer).get_point_position(0).x, 31.5), "Runtime arrow alignment overrides an incompatible authored spine x")
 	check(header_line.width == 2.5 and header_line.default_color == Color(0.7, 0.2, 0.4, 0.9), "Authored header connection style survives geometry updates")
 	check(near(explicit.size.y, 3), "Authored divider thickness participates in layout")
 	audit(content(), "Edited gutter, row height, spacing, style and nonuniform scale")
@@ -286,7 +312,7 @@ func run() -> void:
 	page.set_value("show", false)
 	await settle()
 	check(not spine(inner).visible, "All children hidden leaves no dangling spine")
-	assert_closing(next_line, outer, "Empty conditional group uses containing spine")
+	check(not next_line.visible, "Empty conditional group leaves no ordinary sibling separator")
 	audit(content(), "All nested children hidden")
 	page.set_value("show", true)
 	await settle()
@@ -311,6 +337,26 @@ func run() -> void:
 	assert_closing(content().get_node("AutoDivider_after"), note_only, "Note-only closing boundary")
 	audit(content(), "Empty and note-only groups")
 
+	var main_ui: Control = load("res://main.tscn").instantiate()
+	root.add_child(main_ui)
+	main_ui.show_page("Settings")
+	var main_page: Control = main_ui.get_node("Settings")
+	main_page.get_node("Tabs").current_tab = 1
+	main_page.set_value("ui.DisplayMode", 1)
+	main_page.set_expanded("window_options", true)
+	await settle()
+	var window_rows: Control = main_page.get_node("Tabs/UI/Padding/Content/WindowDetails/Rows")
+	for child in window_rows.get_children():
+		if child is ColorRect:
+			check(not child.visible, "Real windowed options contain no internal long separator: " + str(child.name))
+	check(not window_rows.has_node("WidthDivider") and not window_rows.has_node("HeightDivider"), "Legacy explicit width/height separators are removed from the main schema")
+	var window_details: Control = window_rows.get_parent()
+	audit_details(window_details, "Real windowed options")
+	var window_header: Button = window_details.get("header_control")
+	var expected_arrow_x: float = window_header.global_position.x + 3.0 + 8.0
+	check(near(point_global(spine(window_details), 0).x, expected_arrow_x), "Main-theme arrow uses its actual 3px border margin plus 8px icon half-width")
+	main_ui.queue_free()
+	await settle()
 	page.clear()
 	await settle()
 	check(page.get_node("Tabs").get_child_count() == 0, "Clear removes all connector geometry")

@@ -123,11 +123,6 @@
             "suffix": "px"
           },
           {
-            "id": "window.WidthDivider",
-            "type": "divider",
-            "node_name": "WidthDivider"
-          },
-          {
             "id": "window.Height",
             "type": "number",
             "label": "分辨率高度",
@@ -141,11 +136,6 @@
             "max": 4320.0,
             "step": 1.0,
             "suffix": "px"
-          },
-          {
-            "id": "window.HeightDivider",
-            "type": "divider",
-            "node_name": "HeightDivider"
           },
           {
             "id": "window.RangeNote",
