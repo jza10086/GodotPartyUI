@@ -2,20 +2,18 @@ extends Button
 ## Boolean Button-compatible control. Click anywhere toggles the selection.
 ## Left = false, right = true; no dragging required.
 ## One tab stop; Space/Enter toggle, Left/Right choose a value.
-const DURATION := 0.20
-var off_text := "关"
-var on_text := "开"
+@export var duration := 0.20
+@export var inactive_text_color := Color(0.16, 0.16, 0.16)
+@export var active_text_color := Color(0.98, 0.98, 0.96)
+@export var focus_color := Color(0.48, 0.48, 0.46)
+@export var off_text := "关"
+@export var on_text := "开"
 var _slide := 0.0:
 	set(value):
 		_slide = value
 		queue_redraw()
 var _tween: Tween
 var _initialized := false
-
-func _init() -> void:
-	toggle_mode = true
-	for style in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
-		add_theme_stylebox_override(style, StyleBoxEmpty.new())
 
 func _ready() -> void:
 	resized.connect(queue_redraw)
@@ -39,7 +37,7 @@ func sync_visual(animate: bool = true) -> void:
 	if animate and _initialized and is_inside_tree() and is_visible_in_tree():
 		_tween = create_tween()
 		_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		_tween.tween_property(self, "_slide", target, DURATION)
+		_tween.tween_property(self, "_slide", target, duration)
 	else:
 		_slide = target
 	_initialized = true
@@ -49,20 +47,18 @@ func _exit_tree() -> void:
 	if _tween: _tween.kill()
 
 func _draw() -> void:
-	var inset := 4.0
-	var track := Rect2(Vector2.ZERO, size)
-	draw_rect(track, Color(0.84, 0.84, 0.81))
-	draw_rect(track, Color(0.38, 0.38, 0.36), false, 2.0)
-	var half := maxf(0, (size.x - inset * 2) / 2.0)
-	draw_rect(Rect2(Vector2(inset + half * _slide, inset), Vector2(half, maxf(0, size.y - inset * 2))), Color(0.14, 0.14, 0.14))
-	var font := get_theme_font("font")
-	var font_size := get_theme_font_size("font_size")
+	# Scene nodes own appearance; only animated state is updated here.
+	var selection: ColorRect = $Selection
+	var inset := selection.offset_top
+	selection.anchor_left = _slide * 0.5
+	selection.anchor_right = 0.5 + _slide * 0.5
+	selection.offset_left = inset * (1.0 - _slide)
+	selection.offset_right = -inset * _slide
+	$Off.text = off_text
+	$On.text = on_text
 	for index in range(2):
-		var caption := on_text if index else off_text
-		var width := font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-		var point := Vector2(size.x * (0.25 + index * 0.5) - width / 2, (size.y - font.get_height(font_size)) / 2 + font.get_ascent(font_size))
 		var amount := _slide if index else 1.0 - _slide
-		var color := Color(0.16, 0.16, 0.16).lerp(Color(0.98, 0.98, 0.96), amount)
+		var color := inactive_text_color.lerp(active_text_color, amount)
 		if disabled: color.a = 0.45
-		draw_string(font, point, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-	if has_focus(): draw_rect(track.grow(5), Color(0.48, 0.48, 0.46), false, 3.0)
+		($On if index else $Off).add_theme_color_override("font_color", color)
+	if has_focus(): draw_rect(Rect2(Vector2.ZERO, size).grow(5), focus_color, false, 3.0)

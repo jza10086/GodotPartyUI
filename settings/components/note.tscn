@@ -1,0 +1,11 @@
+[gd_scene load_steps=1 format=3]
+
+
+[node name="Note" type="Label"]
+text = "说明文字"
+custom_minimum_size = Vector2(0, 90)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 23
+vertical_alignment = 1
+autowrap_mode = 3
+

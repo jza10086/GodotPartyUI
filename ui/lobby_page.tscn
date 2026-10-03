@@ -1,0 +1,540 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/muted.tres" id="muted"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/primary.tres" id="primary"]
+
+[node name="Lobby" type="Control"]
+theme = ExtResource("theme")
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="PageBacking" type="ColorRect" parent="."]
+offset_left = 64.0
+offset_top = 64.0
+offset_right = 1856.0
+offset_bottom = 1000.0
+color = Color(0.965,0.965,0.945,0.98)
+mouse_filter = 2
+
+[node name="Eyebrow" type="Label" parent="."]
+offset_left = 96.0
+offset_top = 84.0
+offset_right = 896.0
+offset_bottom = 116.0
+text = "PARTY ROOM  /  8 PLAYERS"
+theme_override_font_sizes/font_size = 20
+mouse_filter = 2
+
+[node name="LobbyTitle" type="Label" parent="."]
+offset_left = 96.0
+offset_top = 122.0
+offset_right = 1296.0
+offset_bottom = 194.0
+text = "我的派对"
+theme_override_font_sizes/font_size = 48
+mouse_filter = 2
+
+[node name="LobbySubtitle" type="Label" parent="."]
+offset_left = 96.0
+offset_top = 198.0
+offset_right = 1496.0
+offset_bottom = 236.0
+text = "演示房间 0001 · 你是房主 · 无真实联网"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="RoleBadge" type="Label" parent="."]
+offset_left = 1534.0
+offset_top = 134.0
+offset_right = 1824.0
+offset_bottom = 184.0
+text = "房主视角"
+theme_override_font_sizes/font_size = 26
+mouse_filter = 2
+
+[node name="Divider" type="ColorRect" parent="."]
+offset_left = 96.0
+offset_top = 252.0
+offset_right = 1824.0
+offset_bottom = 254.0
+color = Color(0.25,0.25,0.24,1)
+mouse_filter = 2
+
+[node name="ReadyAreaTitle" type="Label" parent="."]
+offset_left = 96.0
+offset_top = 268.0
+offset_right = 546.0
+offset_bottom = 308.0
+text = "玩家列表"
+theme_override_font_sizes/font_size = 28
+mouse_filter = 2
+
+[node name="PlayerCount" type="Label" parent="."]
+offset_left = 580.0
+offset_top = 268.0
+offset_right = 716.0
+offset_bottom = 308.0
+text = "3 / 8 人"
+theme_override_font_sizes/font_size = 25
+mouse_filter = 2
+
+[node name="Slot0" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 326.0
+offset_right = 716.0
+offset_bottom = 382.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="SlotNumber0" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 334.0
+offset_right = 160.0
+offset_bottom = 374.0
+text = "01"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName0" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 334.0
+offset_right = 486.0
+offset_bottom = 374.0
+text = "你 · 房主"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus0" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 334.0
+offset_right = 704.0
+offset_bottom = 374.0
+text = "已准备"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot1" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 392.0
+offset_right = 716.0
+offset_bottom = 448.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="SlotNumber1" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 400.0
+offset_right = 160.0
+offset_bottom = 440.0
+text = "02"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName1" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 400.0
+offset_right = 486.0
+offset_bottom = 440.0
+text = "小林"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus1" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 400.0
+offset_right = 704.0
+offset_bottom = 440.0
+text = "已准备"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot2" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 458.0
+offset_right = 716.0
+offset_bottom = 514.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="SlotNumber2" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 466.0
+offset_right = 160.0
+offset_bottom = 506.0
+text = "03"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName2" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 466.0
+offset_right = 486.0
+offset_bottom = 506.0
+text = "阿舟"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus2" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 466.0
+offset_right = 704.0
+offset_bottom = 506.0
+text = "已准备"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot3" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 524.0
+offset_right = 716.0
+offset_bottom = 580.0
+theme_override_styles/panel = ExtResource("muted")
+mouse_filter = 2
+
+[node name="SlotNumber3" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 532.0
+offset_right = 160.0
+offset_bottom = 572.0
+text = "04"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName3" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 532.0
+offset_right = 486.0
+offset_bottom = 572.0
+text = "等待加入"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus3" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 532.0
+offset_right = 704.0
+offset_bottom = 572.0
+text = "空位"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot4" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 590.0
+offset_right = 716.0
+offset_bottom = 646.0
+theme_override_styles/panel = ExtResource("muted")
+mouse_filter = 2
+
+[node name="SlotNumber4" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 598.0
+offset_right = 160.0
+offset_bottom = 638.0
+text = "05"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName4" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 598.0
+offset_right = 486.0
+offset_bottom = 638.0
+text = "等待加入"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus4" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 598.0
+offset_right = 704.0
+offset_bottom = 638.0
+text = "空位"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot5" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 656.0
+offset_right = 716.0
+offset_bottom = 712.0
+theme_override_styles/panel = ExtResource("muted")
+mouse_filter = 2
+
+[node name="SlotNumber5" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 664.0
+offset_right = 160.0
+offset_bottom = 704.0
+text = "06"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName5" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 664.0
+offset_right = 486.0
+offset_bottom = 704.0
+text = "等待加入"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus5" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 664.0
+offset_right = 704.0
+offset_bottom = 704.0
+text = "空位"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot6" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 722.0
+offset_right = 716.0
+offset_bottom = 778.0
+theme_override_styles/panel = ExtResource("muted")
+mouse_filter = 2
+
+[node name="SlotNumber6" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 730.0
+offset_right = 160.0
+offset_bottom = 770.0
+text = "07"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName6" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 730.0
+offset_right = 486.0
+offset_bottom = 770.0
+text = "等待加入"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus6" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 730.0
+offset_right = 704.0
+offset_bottom = 770.0
+text = "空位"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="Slot7" type="Panel" parent="."]
+offset_left = 96.0
+offset_top = 788.0
+offset_right = 716.0
+offset_bottom = 844.0
+theme_override_styles/panel = ExtResource("muted")
+mouse_filter = 2
+
+[node name="SlotNumber7" type="Label" parent="."]
+offset_left = 112.0
+offset_top = 796.0
+offset_right = 160.0
+offset_bottom = 836.0
+text = "08"
+theme_override_font_sizes/font_size = 23
+mouse_filter = 2
+
+[node name="SlotName7" type="Label" parent="."]
+offset_left = 176.0
+offset_top = 796.0
+offset_right = 486.0
+offset_bottom = 836.0
+text = "等待加入"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+text_overrun_behavior = 3
+
+[node name="SlotStatus7" type="Label" parent="."]
+offset_left = 556.0
+offset_top = 796.0
+offset_right = 704.0
+offset_bottom = 836.0
+text = "空位"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="SettingsPanel" type="Panel" parent="."]
+offset_left = 760.0
+offset_top = 268.0
+offset_right = 1824.0
+offset_bottom = 744.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="BasicTitle" type="Label" parent="."]
+offset_left = 792.0
+offset_top = 288.0
+offset_right = 1442.0
+offset_bottom = 330.0
+text = "大游戏基础设置"
+theme_override_font_sizes/font_size = 30
+mouse_filter = 2
+
+[node name="SettingsAuthority" type="Label" parent="."]
+offset_left = 792.0
+offset_top = 338.0
+offset_right = 1772.0
+offset_bottom = 372.0
+text = "房主可修改 · 所有设置仅用于界面演示"
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+
+[node name="GameLabel" type="Label" parent="."]
+offset_left = 792.0
+offset_top = 390.0
+offset_right = 1000.0
+offset_bottom = 448.0
+text = "大游戏"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+
+[node name="Game" type="Button" parent="."]
+offset_left = 1020.0
+offset_top = 390.0
+offset_right = 1792.0
+offset_bottom = 448.0
+text = "派对竞赛  →"
+theme_override_font_sizes/font_size = 26
+
+[node name="MapLabel" type="Label" parent="."]
+offset_left = 792.0
+offset_top = 478.0
+offset_right = 1000.0
+offset_bottom = 536.0
+text = "地图"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+
+[node name="Map" type="Button" parent="."]
+offset_left = 1020.0
+offset_top = 478.0
+offset_right = 1792.0
+offset_bottom = 536.0
+text = "欢乐广场  →"
+theme_override_font_sizes/font_size = 26
+
+[node name="RoundsLabel" type="Label" parent="."]
+offset_left = 792.0
+offset_top = 566.0
+offset_right = 1000.0
+offset_bottom = 624.0
+text = "游戏回合"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+
+[node name="Rounds" type="Button" parent="."]
+offset_left = 1020.0
+offset_top = 566.0
+offset_right = 1324.0
+offset_bottom = 624.0
+text = "5 回合  →"
+theme_override_font_sizes/font_size = 26
+
+[node name="CapacityLabel" type="Label" parent="."]
+offset_left = 1372.0
+offset_top = 566.0
+offset_right = 1560.0
+offset_bottom = 624.0
+text = "人数上限"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+
+[node name="Capacity" type="Label" parent="."]
+offset_left = 1632.0
+offset_top = 566.0
+offset_right = 1792.0
+offset_bottom = 624.0
+text = "8 人"
+theme_override_font_sizes/font_size = 26
+mouse_filter = 2
+
+[node name="ImportPreset" type="Button" parent="."]
+offset_left = 792.0
+offset_top = 660.0
+offset_right = 1096.0
+offset_bottom = 718.0
+text = "导入预设"
+theme_override_font_sizes/font_size = 26
+
+[node name="ExportPreset" type="Button" parent="."]
+offset_left = 1116.0
+offset_top = 660.0
+offset_right = 1420.0
+offset_bottom = 718.0
+text = "导出预设"
+theme_override_font_sizes/font_size = 26
+
+[node name="Advanced" type="Button" parent="."]
+offset_left = 1440.0
+offset_top = 660.0
+offset_right = 1792.0
+offset_bottom = 718.0
+text = "高级设置"
+theme_override_font_sizes/font_size = 26
+
+[node name="ReadySummary" type="Label" parent="."]
+offset_left = 760.0
+offset_top = 772.0
+offset_right = 1356.0
+offset_bottom = 812.0
+text = "已准备 3 / 3 · 空位不影响演示"
+theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+
+[node name="LobbyNote" type="Label" parent="."]
+offset_left = 760.0
+offset_top = 818.0
+offset_right = 1356.0
+offset_bottom = 850.0
+text = "预设仅模拟导入 / 导出，不读写文件"
+theme_override_font_sizes/font_size = 20
+mouse_filter = 2
+
+[node name="Ready" type="Button" parent="."]
+offset_left = 1392.0
+offset_top = 780.0
+offset_right = 1824.0
+offset_bottom = 856.0
+text = "开始游戏"
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = ExtResource("primary")
+theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
+theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)
+
+[node name="Back" type="Button" parent="."]
+offset_left = 96.0
+offset_top = 924.0
+offset_right = 456.0
+offset_bottom = 996.0
+text = "←  离开游戏"
+theme_override_font_sizes/font_size = 26
+
+[node name="LeaveNote" type="Label" parent="."]
+offset_left = 480.0
+offset_top = 930.0
+offset_right = 1046.0
+offset_bottom = 990.0
+text = "返回主菜单"
+theme_override_font_sizes/font_size = 22
+mouse_filter = 2

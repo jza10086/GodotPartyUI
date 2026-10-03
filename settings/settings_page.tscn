@@ -118,9 +118,11 @@ offset_bottom = 882.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_selected_color = Color(0.96,0.96,0.94,1)
 theme_override_colors/font_unselected_color = Color(0.16,0.16,0.16,1)
+theme_override_colors/font_hovered_color = Color(0.1,0.1,0.1,1)
 theme_override_styles/panel = SubResource("card")
 theme_override_styles/tab_selected = SubResource("tab_active")
 theme_override_styles/tab_unselected = SubResource("tab_inactive")
+theme_override_styles/tab_hovered = SubResource("tab_inactive")
 theme_override_constants/side_margin = 20
 current_tab = 0
 

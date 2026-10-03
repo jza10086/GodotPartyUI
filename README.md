@@ -1,12 +1,12 @@
 # GODOT PARTY · 主界面交互原型
 
-原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。灰阶线框风格，全部界面均使用原生 Control 节点；通用设置页按输入数据动态生成，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
+原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。灰阶线框风格，全部界面均使用原生 Control 节点；通用设置页按输入数据实例化可编辑组件场景，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
 
 ## 打开与运行
 
 1. 使用 Godot 4.7.2，导入 `project.godot` 并等待字体导入
 2. 按 F6 运行主场景，或 F5 运行项目
-3. 在 `main.tscn` 的 2D 编辑器直接调整主菜单 / 房间；设置内容通过 `settings/main_settings_schema.json` 与 `main.gd` 的业务回调生成
+3. 在 `main.tscn` 的 2D 编辑器直接调整主菜单 / 房间；设置布局在 `settings/components/*.tscn` 中编辑，内容通过 `settings/main_settings_schema.json` 与 `main.gd` 绑定
 
 初始窗口 1280×720，原生设计视口 **1920×1080**，统一缩放保持 16:9。无需插件、账号或网络。
 
@@ -16,7 +16,7 @@
 - 根据输入生成页签、静态选项、下拉选项框、左右选项开关（点击切换与滑动动画）、数值框、数值滑条（含精确输入）、分隔线、说明、动作按钮、条件折叠分组和双槽位按键绑定
 - 通过稳定 ID 调用 `configure` / `add_tab` / `add_option` / `get_value` / `get_values` / `set_value` / `clear`，无需硬编码节点路径
 - 修改值调用传入的 `Callable(value, id)`；动作按钮调用 `Callable(id)`。初始化、滑块与数值框同步、静默回填不会重复应用；可选统一 `setting_changed(id, value)` 信号
-- 按键绑定由代码生成「功能名称 / 主按键 / 次要按键」三列，支持展开分组和功能行子操作、自然滚动、组合键、清空 / 取消和同范围冲突检查。Esc 取消录入，Delete / Backspace 清空，单独修饰键不提交；录入时消费快捷键，不触发背景返回或截图
+- 按键绑定由组件场景组成「功能名称 / 主按键 / 次要按键」三列，支持展开分组和功能行子操作、自然滚动、组合键、清空 / 取消和同范围冲突检查。Esc 取消录入，Delete / Backspace 清空，单独修饰键不提交；录入时消费快捷键，不触发背景返回或截图
 - 绑定值为 `[KEY_W, KEY_UP]` 等整数双槽数组（`0` 为空）；业务 `Callable(value, id)` 应用到 InputMap，组件本身不修改 InputMap。主界面与独立示例只修改 `party_demo_*` 动作，不覆盖 `ui_*`；F10 示例底部显示实际动作触发
 - 主菜单设置页已经实际使用这套 API；显示模式和应用窗口分辨率通过传入回调接入，语音与 UI 音效仍是原型状态
 - 完整中文文档和可复制接入代码：[`docs/SETTINGS_API.zh-CN.md`](docs/SETTINGS_API.zh-CN.md)
@@ -109,7 +109,10 @@
 ## 文件与验证
 
 - `project.godot`：4.7 项目配置
-- `main.tscn`：原生场景树、主题、几何尺寸
+- `main.tscn`：组装主页面、弹层、设置页与固定状态区
+- `ui/home_page.tscn`、`ui/rooms_page.tscn`、`ui/lobby_page.tscn`：独立可编辑的主菜单、房间列表与大厅
+- `ui/modal_layer.tscn`、`ui/dialogs/`：弹层遮罩与各个独立弹窗；`ui/theme/` 保存共享主题与样式
+- `settings/components/`：所有设置行、展开层级线、捕获弹层、开关与 tooltip 的原生组件场景；详细编辑规则见 API 文档末尾
 - `main.gd`：页面、玩法协议选择、设置、退出、截图逻辑
 - `settings/demo_bindings.gd`：程序化按键示例数据与应用层 InputMap 回调；主场景和独立示例共享
 - `assets/`：中文字体、Godot 官方图标及许可说明
@@ -126,9 +129,12 @@ godot --headless --path . --script res://tests/test_segmented_toggle.gd
 godot --headless --path . --script res://tests/test_settings_dividers.gd
 godot --headless --path . --script res://tests/test_room_profile.gd
 godot --headless --path . --script res://tests/test_keybindings.gd
+godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+新增场景组件测试 **54 项**：全部组件独立实例化、各 schema 类型、场景尺寸保留、嵌套层级线伸缩和折叠、居中 tooltip、捕获层信号、页签悬停边距。连同既有 476 项，共 **530 项通过**，另通过独立退出确认测试。主页面与弹窗分拆保持业务控件路径、几何与样式不变；每个弹窗自带可编辑的 Dialog 背景，打开弹窗不覆盖面板尺寸。
 
 新增按键绑定专项测试 **86 项**：双槽生成、组合键与保留键、静默和一次回调、重复 / 冲突原子拒绝、主 / 次列跨层级对齐、捕获取消 / 清空 / 失焦 / 离页、F10 / F12 不穿透、折叠与滚动、真实 InputMap 双事件及回调中重建。连同原有 390 项，共 **476 项通过**，另通过独立退出确认测试。
 

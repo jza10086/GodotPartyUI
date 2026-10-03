@@ -407,3 +407,26 @@ func apply_binding(value: Variant, id: String) -> void:
 ```
 
 可运行参考见 `settings/demo_bindings.gd`、`main.gd` 和 `examples/settings_demo.gd`。示例创建的 `party_demo_*` 动作只保留在当前进程，不调用 `ProjectSettings.save()`；重建示例会重新应用默认绑定，且回调计数仍从零开始。当前未实现文件持久化、鼠标 / 手柄重绑定或跨设置页实例的全局冲突管理。
+
+
+## 可编辑组件场景（场景化布局）
+
+设置页不再在脚本里创建和排列控件。`settings_page.gd` 保留 schema 校验、数据绑定、动态实例化、信号、可见性和输入路由；所有静态布局使用 `settings/components/` 中的 PackedScene。API、稳定 ID、Callable 参数与回调语义不变，已有接入代码可继续使用。
+
+可在编辑器直接打开并修改：
+
+- `tab_content.tscn`：页签的 ScrollContainer、Padding、Content，调内边距和行间距
+- `label_row.tscn`、`select_row.tscn`、`number_row.tscn`、`slider_row.tscn`、`toggle_row.tscn`：名称与值控件、行高、列宽、字号和对齐；滑块行包含独立精确数值框
+- `action.tscn`、`note.tscn`、`divider.tscn`、`group.tscn`：动作、说明、水平分隔线与展开按钮
+- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 是独立 Line2D；可调 x、颜色、粗细。脚本只让末点 y 跟随容器高度，折叠时整组隐藏；嵌套组各有一条线
+- `keybinding.tscn`、`keybinding_group.tscn`、`bindings_header.tscn`：三列按键布局。三者 Function 列宽应保持一致；运行时只减去实际祖先缩进，以保持主/次按键列跨层级对齐
+- `binding_capture.tscn`：遮罩、面板、标题、提示、清除与取消按钮，均是可视节点
+- `tooltip.tscn`：提示文本水平和垂直居中；按键行控件通过 tooltip 脚本实例化，脚本只填文字
+- `segmented_toggle.tscn`：开关轨道、滑动选中块、左右标签。脚本仅处理键盘、状态、动画位置和随状态变化的文字颜色；颜色/文案/动画时长可在根节点导出属性中修改
+- `settings_page.tscn`：页面大小、返回按钮、主题、页签位置；hover/未选中页签共用相同边距，避免鼠标悬停造成文字偏移
+
+运行时不会每次重设场景里的字号、普通行尺寸、边距、间距和样式。schema 显式提供的 `row_height` / `label_width` / `font_size` / `height` 仍优先于场景默认值；标签、选项、数值范围、绑定提示等业务数据也由 schema 接管。`node_name` / `label_name` / `control_name` / `number_name` / `details_name` 仍可覆盖运行时名称。编辑组件时请保留脚本使用的节点名与结构（例如 Value、Label、Number、Rows、Function、Primary、Secondary）。复用设置页时应携带整个 `settings/components/` 目录。
+
+动态数据需要运行时实例化，因此页签实际业务内容在运行后出现；无需把每一种配置烘焙成独立场景。单个组件可独立打开、编辑和实例化。新增 `tests/test_scene_components.gd` 覆盖全部组件加载、API 组装、布局默认值、层级线伸缩/折叠、居中提示、捕获弹层与 hover 边距。
+
+主界面弹窗位于 `ui/dialogs/*.tscn`，各自拥有 `Dialog` 背景节点。可在对应场景修改背景的位置、大小与样式；`open_modal()` 只控制显隐和业务值，不再写死面板几何。原内部共享背景 `Modal/Dialog` 已替换成 `Modal/<弹窗名>/Dialog`，业务控件路径与设置 API 不变。

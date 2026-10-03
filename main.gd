@@ -1,5 +1,6 @@
 extends Control
-## Native Control-only prototype. All visible layouts are editable in main.tscn.
+## Native Control-only prototype. main.tscn assembles editable ui/ and settings/ scenes.
+## This controller only binds events and updates state; visual layouts live in .tscn files.
 const DemoBindings = preload("res://settings/demo_bindings.gd")
 var page := "Home"
 var modal_kind := ""
@@ -212,8 +213,6 @@ func open_modal(kind: String) -> void:
 	modal_kind = kind
 	update_status()
 	$Modal.show()
-	$Modal/Dialog.position = Vector2(520, 176) if kind == "Create" else Vector2(540, 270)
-	$Modal/Dialog.size = Vector2(880, 684) if kind == "Create" else Vector2(840, 540)
 	$Modal/Profile.visible = kind == "Profile"
 	$Modal/Direct.visible = kind == "Direct"
 	$Modal/Create.visible = kind == "Create"
