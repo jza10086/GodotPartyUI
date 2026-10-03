@@ -3,6 +3,14 @@ extends Control
 ## Reusable runtime-generated settings. See docs/SETTINGS_API.zh-CN.md.
 signal setting_changed(id: String, value: Variant)
 signal back_requested
+signal binding_conflict(id: String, slot: int, conflicting_id: String)
+const KeyBinding = preload("res://settings/key_binding.gd")
+var _capture_id := ""
+var _capture_slot := 0
+var _capture_overlay: Control
+var _capture_message: Label
+var _capture_return_focus: Control
+var _swallow_key := 0
 var last_error := ""
 var _schema: Array = []
 var _entries: Dictionary = {}
@@ -11,7 +19,11 @@ var _option_lists: Array = []
 var _generation := 0
 
 func _ready() -> void:
-	$Back.pressed.connect(func(): back_requested.emit())
+	$Back.pressed.connect(func(): cancel_binding_capture(); back_requested.emit())
+	$Tabs.tab_changed.connect(func(_index): cancel_binding_capture())
+	visibility_changed.connect(func():
+		if not is_visible_in_tree(): cancel_binding_capture()
+	)
 
 func configure(tabs: Array) -> bool:
 	last_error = ""
@@ -27,6 +39,7 @@ func configure(tabs: Array) -> bool:
 		var condition: Variant = spec.get("visible_when", {})
 		if not condition is Dictionary or (not condition.is_empty() and (not ids.has(condition.get("id", "")) or not condition.has("equals"))):
 			return _fail("Invalid visible_when reference")
+	if not _validate_binding_conflicts(ids): return false
 	clear()
 	_schema = tabs.duplicate(true)
 	for tab in _schema:
@@ -54,7 +67,7 @@ func _validate_options(options: Array, ids: Dictionary) -> bool:
 			return _fail("Invalid or duplicate option id")
 		if not spec.get("type", "") is String: return _fail("Option type must be a String")
 		var type: String = spec.get("type", "")
-		if type not in ["label", "select", "toggle", "number", "slider", "note", "divider", "action", "group"]:
+		if type not in ["label", "select", "toggle", "number", "slider", "note", "divider", "action", "group", "keybinding", "bindings_header"]:
 			return _fail("Unknown option type")
 		if spec.has("callback") and not spec.callback is Callable:
 			return _fail("callback must be a Callable")
@@ -77,14 +90,18 @@ func _validate_options(options: Array, ids: Dictionary) -> bool:
 				seen.append(item.value)
 			if spec.has("value") and spec.value not in seen:
 				return _fail("Initial select value is not in items")
+		if type == "keybinding":
+			if not KeyBinding.valid_pair(spec.get("value", [0, 0])): return _fail("Keybinding requires two distinct valid keycodes (0 means unbound)")
+			if not spec.get("conflict_scope", "global") is String: return _fail("conflict_scope must be a String")
 		ids[spec.id] = spec
-		if type == "group":
+		if type in ["group", "keybinding"]:
 			if spec.has("expanded") and not spec.expanded is bool: return _fail("Group expanded must be bool")
 			if not spec.get("children", []) is Array: return _fail("Group children must be an Array")
 			if not _validate_options(spec.get("children", []), ids): return false
 	return true
 
 func clear() -> void:
+	cancel_binding_capture(false)
 	_generation += 1
 	_entries.clear()
 	_tabs.clear()
@@ -115,7 +132,7 @@ func add_option(tab_id: String, spec: Dictionary, parent_group: String = "") -> 
 
 func _append_group(options: Array, group_id: String, spec: Dictionary) -> bool:
 	for option in options:
-		if option.type == "group":
+		if option.type in ["group", "keybinding"]:
 			if option.id == group_id:
 				if not option.has("children"): option.children = []
 				option.children.append(spec)
@@ -129,12 +146,13 @@ func _capture_values(tabs: Array) -> void:
 func _capture_options(options: Array) -> void:
 	for spec in options:
 		if _entries.has(spec.id):
-			if spec.type == "group": spec.expanded = _entries[spec.id].control.button_pressed
-			elif _entries[spec.id].has("value"): spec.value = _entries[spec.id].value
-		if spec.type == "group": _capture_options(spec.get("children", []))
+			if _entries[spec.id].has("expander"): spec.expanded = _entries[spec.id].expander.button_pressed
+			if _entries[spec.id].has("value"): spec.value = _entries[spec.id].value.duplicate(true) if _entries[spec.id].value is Array else _entries[spec.id].value
+		if spec.type in ["group", "keybinding"]: _capture_options(spec.get("children", []))
 
 func get_value(id: String) -> Variant:
-	return _entries.get(id, {}).get("value", null)
+	var value: Variant = _entries.get(id, {}).get("value", null)
+	return value.duplicate(true) if value is Array or value is Dictionary else value
 
 func get_values() -> Dictionary:
 	var values: Dictionary = {}
@@ -164,6 +182,11 @@ func set_value(id: String, value: Variant, notify: bool = false) -> bool:
 			for item in spec.items:
 				if _same(item.value, value): found = true
 			if not found: return _fail("Value is not in select items")
+		"keybinding":
+			if not KeyBinding.valid_pair(value): return _fail("Keybinding requires two distinct valid keycodes (0 means unbound)")
+			var conflict := _binding_conflict_for(id, value)
+			if not conflict.is_empty(): return _fail("Key already assigned to " + str(_entries[conflict].spec.get("label", conflict)))
+			value = value.duplicate(true)
 		"label": value = str(value)
 		_: return _fail("This option has no settable value")
 	var changed: bool = not _same(entry.get("value"), value)
@@ -174,13 +197,17 @@ func set_value(id: String, value: Variant, notify: bool = false) -> bool:
 		var callback: Callable = spec.get("callback", Callable())
 		# Emit after model and widgets agree; callbacks may rebuild/free this page.
 		var generation := _generation
-		if callback.is_valid(): callback.call(value, id)
-		if is_instance_valid(self) and not is_queued_for_deletion() and generation == _generation: setting_changed.emit(id, value)
+		if callback.is_valid(): callback.call(get_value(id), id)
+		if is_instance_valid(self) and not is_queued_for_deletion() and generation == _generation: setting_changed.emit(id, get_value(id))
 	return true
 
 func _sync(entry: Dictionary) -> void:
 	var control: Control = entry.control
 	match entry.spec.type:
+		"keybinding":
+			for slot in range(2):
+				entry.bindings[slot].text = KeyBinding.label(entry.value[slot])
+				entry.bindings[slot].tooltip_text = str(entry.spec.get("label", entry.spec.id)) + (" · 主按键" if slot == 0 else " · 次要按键") + "：点击重新绑定"
 		"label": control.text = str(entry.value)
 		"toggle":
 			control.set_pressed_no_signal(entry.value)
@@ -283,12 +310,16 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 		control = button
 		if type == "action": button.pressed.connect(_action.bind(id, _generation))
 		else:
+			entry.expander = button
 			button.toggle_mode = true
 			button.flat = true
 			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			button.add_theme_constant_override("h_separation", 14)
 			button.set_pressed_no_signal(spec.get("expanded", false))
 			button.toggled.connect(_expanded.bind(_generation))
+	elif type in ["keybinding", "bindings_header"]:
+		root_node = _build_binding_row(parent, spec, entry)
+		control = entry.control
 	else:
 		var row := HBoxContainer.new()
 		row.custom_minimum_size.y = spec.get("row_height", 96)
@@ -346,7 +377,7 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 	root_node.name = spec.get("node_name", id.validate_node_name())
 	entry.root = root_node
 	parent.add_child(root_node)
-	if type == "group":
+	if type == "group" or (type == "keybinding" and spec.has("children")):
 		var margin := MarginContainer.new()
 		margin.name = spec.get("details_name", id.validate_node_name() + "Details")
 		margin.add_theme_constant_override("margin_left", 40)
@@ -357,6 +388,10 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 		children.add_theme_constant_override("separation", 12)
 		margin.add_child(children)
 		_build_options(children, spec.get("children", []))
+	if type == "keybinding":
+		# Schema was validated as a whole before construction.
+		entry.value = spec.get("value", [0, 0]).duplicate(true)
+		_sync(entry)
 	elif type in ["label", "number", "slider", "toggle", "select"]:
 		var default: Variant = "" if type == "label" else (false if type == "toggle" else 0)
 		if type == "select": default = spec.items[0].value
@@ -368,9 +403,9 @@ func _refresh_visibility() -> void:
 		var condition: Dictionary = entry.spec.get("visible_when", {})
 		var showing: bool = condition.is_empty() or _same(get_value(str(condition.get("id", ""))), condition.get("equals"))
 		entry.root.visible = showing
-		if entry.spec.type == "group" and entry.has("details"):
-			entry.details.visible = showing and entry.control.button_pressed
-			entry.control.icon = preload("res://assets/chevron_down.svg") if entry.control.button_pressed else preload("res://assets/chevron_right.svg")
+		if entry.has("details"):
+			entry.details.visible = showing and entry.expander.button_pressed
+			entry.expander.icon = preload("res://assets/chevron_down.svg") if entry.expander.button_pressed else preload("res://assets/chevron_right.svg")
 
 	# Only separate neighboring visible rows. Notes and explicit dividers are
 	# intentional section boundaries; neither receives an extra automatic line.
@@ -385,10 +420,11 @@ func _refresh_visibility() -> void:
 			if showing: previous_row = is_row
 
 func _input(event: InputEvent) -> void:
+	if _route_binding_input(event): return
 	route_scroll_input(event)
 
 func route_scroll_input(event: InputEvent) -> void:
-	if not is_visible_in_tree() or $Tabs.get_tab_count() == 0: return
+	if is_capturing_binding() or not is_visible_in_tree() or $Tabs.get_tab_count() == 0: return
 	if not event is InputEventMouseButton or not event.pressed or event.button_index not in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]: return
 	for entry in _entries.values():
 		if entry.control is OptionButton and entry.control.get_popup().visible: return
@@ -397,3 +433,216 @@ func route_scroll_input(event: InputEvent) -> void:
 		var direction := 1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -1
 		scroll.scroll_vertical += int(direction * 64 * maxf(event.factor, 1))
 		get_viewport().set_input_as_handled()
+
+func _validate_binding_conflicts(ids: Dictionary) -> bool:
+	var scopes: Dictionary = {}
+	for id in ids:
+		var spec: Dictionary = ids[id]
+		if spec.type != "keybinding": continue
+		var scope: String = spec.get("conflict_scope", "global")
+		if not scopes.has(scope): scopes[scope] = {}
+		for code in spec.get("value", [0, 0]):
+			if code == 0: continue
+			if scopes[scope].has(code): return _fail("Duplicate binding in scope " + scope + ": " + KeyBinding.label(code))
+			scopes[scope][code] = id
+	return true
+
+func _binding_conflict_for(id: String, pair: Array) -> String:
+	var scope: String = _entries[id].spec.get("conflict_scope", "global")
+	for other_id in _entries:
+		var other: Dictionary = _entries[other_id]
+		if other_id == id or other.spec.type != "keybinding" or not other.has("value"): continue
+		if other.spec.get("conflict_scope", "global") != scope: continue
+		for code in pair:
+			if code != 0 and code in other.value: return other_id
+	return ""
+
+func _binding_label_width(parent: Control) -> float:
+	# Compensate group indentation in the name column only: both key columns
+	# retain the same global x position, including nested expandable items.
+	var width := 570.0
+	var ancestor: Node = parent
+	while ancestor != null and ancestor.name != "Padding":
+		if ancestor is MarginContainer: width -= ancestor.get_theme_constant("margin_left")
+		ancestor = ancestor.get_parent()
+	return maxf(width, 80.0)
+
+func _build_binding_row(parent: Control, spec: Dictionary, entry: Dictionary) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size.y = 72 if spec.type == "bindings_header" else 96
+	row.add_theme_constant_override("separation", 24)
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
+	var name_control: Control
+	if spec.type == "keybinding" and spec.has("children"):
+		var expand := Button.new()
+		expand.text = str(spec.get("label", spec.id))
+		expand.toggle_mode = true
+		expand.flat = true
+		expand.clip_text = true
+		expand.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		expand.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		expand.set_pressed_no_signal(spec.get("expanded", false))
+		expand.toggled.connect(_expanded.bind(_generation))
+		entry.expander = expand
+		name_control = expand
+	else:
+		name_control = _label("功能名称" if spec.type == "bindings_header" else str(spec.get("label", spec.id)))
+	if name_control is Label:
+		name_control.clip_text = true
+		name_control.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_control.tooltip_text = str(spec.get("label", "功能名称"))
+	_field(name_control, _binding_label_width(parent))
+	name_control.name = "Function"
+	row.add_child(name_control)
+	entry.bindings = []
+	for slot in range(2):
+		var field: Control
+		if spec.type == "bindings_header":
+			var heading := _label("主按键" if slot == 0 else "次要按键", 24)
+			heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			heading.clip_text = true
+			field = heading
+		else:
+			var button := Button.new()
+			button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			button.clip_text = true
+			var generation := _generation
+			button.pressed.connect(func():
+				if generation == _generation: begin_binding_capture(spec.id, slot)
+			)
+			entry.bindings.append(button)
+			field = button
+		_field(field)
+		field.custom_minimum_size.x = 64
+		# Ignore text minimum so changing a long shortcut never shifts columns.
+		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		field.name = "Primary" if slot == 0 else "Secondary"
+		row.add_child(field)
+	entry.control = entry.bindings[0] if spec.type == "keybinding" else name_control
+	return row
+
+func get_binding_control(id: String, slot: int) -> Button:
+	if slot not in [0, 1] or not _entries.has(id) or _entries[id].spec.type != "keybinding": return null
+	return _entries[id].bindings[slot]
+
+func get_expander(id: String) -> Button:
+	return _entries.get(id, {}).get("expander", null)
+
+func set_expanded(id: String, expanded: bool) -> bool:
+	var button := get_expander(id)
+	if button == null: return _fail("Option has no expandable children")
+	button.set_pressed_no_signal(expanded)
+	_refresh_visibility()
+	if is_capturing_binding() and not _entries[_capture_id].root.is_visible_in_tree(): cancel_binding_capture()
+	return true
+
+func is_capturing_binding() -> bool:
+	return not _capture_id.is_empty()
+
+func begin_binding_capture(id: String, slot: int) -> bool:
+	var button := get_binding_control(id, slot)
+	if button == null or not button.is_visible_in_tree(): return _fail("Binding slot is unavailable")
+	cancel_binding_capture(false)
+	_capture_id = id
+	_capture_slot = slot
+	_capture_return_focus = button
+	var overlay := Control.new()
+	overlay.name = "BindingCapture"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.z_index = 30
+	add_child(overlay)
+	_capture_overlay = overlay
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.32)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(shade)
+	var panel := PanelContainer.new()
+	panel.position = Vector2(470, 330)
+	panel.size = Vector2(980, 380)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.965, 0.965, 0.945)
+	style.set_border_width_all(2)
+	style.border_color = Color(0.25, 0.25, 0.24)
+	style.set_content_margin_all(32)
+	panel.add_theme_stylebox_override("panel", style)
+	overlay.add_child(panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 24)
+	panel.add_child(content)
+	var title := _label(str(_entries[id].spec.get("label", id)) + (" · 主按键" if slot == 0 else " · 次要按键"), 30)
+	content.add_child(title)
+	_capture_message = _label("按下新按键，可组合 Ctrl / Alt / Shift / Meta\nEsc 取消 · Delete / Backspace 清除", 24)
+	_capture_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_capture_message.custom_minimum_size = Vector2(880, 124)
+	content.add_child(_capture_message)
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 24)
+	content.add_child(actions)
+	for label_text in ["清除绑定", "取消"]:
+		var action := Button.new()
+		action.text = label_text
+		_field(action)
+		actions.add_child(action)
+		if label_text == "取消": action.pressed.connect(cancel_binding_capture)
+		else: action.pressed.connect(func(): _commit_binding(0))
+	button.release_focus()
+	set_process(true)
+	return true
+
+func cancel_binding_capture(restore_focus: bool = true) -> void:
+	_capture_id = ""
+	if is_instance_valid(_capture_overlay):
+		remove_child(_capture_overlay)
+		_capture_overlay.queue_free()
+	_capture_overlay = null
+	_capture_message = null
+	if restore_focus and is_instance_valid(_capture_return_focus) and _capture_return_focus.is_visible_in_tree():
+		_capture_return_focus.grab_focus()
+	_capture_return_focus = null
+	set_process(false)
+
+func _commit_binding(code: int) -> bool:
+	if not is_capturing_binding(): return false
+	var id := _capture_id
+	var slot := _capture_slot
+	var pair: Array = get_value(id)
+	pair[slot] = code
+	var conflict := _binding_conflict_for(id, pair)
+	if not KeyBinding.valid_pair(pair) or not conflict.is_empty():
+		var other: String = id if conflict.is_empty() else conflict
+		last_error = "已用于「" + str(_entries[other].spec.get("label", other)) + "」，请先清除原绑定或换一个按键"
+		_capture_message.text = last_error + "\nEsc 取消 · Delete / Backspace 清除"
+		binding_conflict.emit(id, slot, other)
+		return false
+	# Dismiss before invoking arbitrary application callbacks (which may rebuild).
+	cancel_binding_capture()
+	return set_value(id, pair, true)
+
+func _route_binding_input(event: InputEvent) -> bool:
+	if event is InputEventKey and _swallow_key != 0 and event.keycode == _swallow_key:
+		get_viewport().set_input_as_handled()
+		if not event.pressed: _swallow_key = 0
+		return true
+	if not is_capturing_binding(): return false
+	if event is InputEventKey:
+		get_viewport().set_input_as_handled()
+		if not event.pressed or event.echo: return true
+		if event.keycode in [KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_META, KEY_NONE]: return true
+		_swallow_key = event.keycode
+		if event.keycode == KEY_ESCAPE: cancel_binding_capture()
+		elif event.keycode in [KEY_DELETE, KEY_BACKSPACE]: _commit_binding(0)
+		else: _commit_binding(event.get_keycode_with_modifiers())
+		return true
+	# Pointer events continue to the overlay's explicit clear / cancel buttons.
+	return false
+
+func _process(_delta: float) -> void:
+	if is_capturing_binding() and (not _entries.has(_capture_id) or not _entries[_capture_id].root.is_visible_in_tree()):
+		cancel_binding_capture()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		cancel_binding_capture(false)
+		_swallow_key = 0

@@ -1,5 +1,6 @@
 extends Control
 ## Native Control-only prototype. All visible layouts are editable in main.tscn.
+const DemoBindings = preload("res://settings/demo_bindings.gd")
 var page := "Home"
 var modal_kind := ""
 var previous_focus: Control
@@ -274,7 +275,7 @@ func select_protocol(index: int) -> void:
 func update_status() -> void:
 	$Status/Engine.text = "GODOT " + str(Engine.get_version_info()["string"])
 	$Status/Protocol.text = "PROTOCOL  /  MOCK · " + PROTOCOL_NAMES[selected_protocol]
-	var screen_id: String = page + ("/" + ["Voice", "UI", "About"][$Settings/Tabs.current_tab] if page == "Settings" else "") + ("/" + modal_kind if not modal_kind.is_empty() else "")
+	var screen_id: String = page + ("/" + ["Voice", "UI", "About", "Bindings"][$Settings/Tabs.current_tab] if page == "Settings" else "") + ("/" + modal_kind if not modal_kind.is_empty() else "")
 	$Status/Scene.text = "UI  /  " + scene_file_path + " :: " + screen_id
 
 func select_game(index: int) -> void:
@@ -309,10 +310,17 @@ func build_settings() -> void:
 	schema[1].options[2].callback = func(value, _id): set_display_mode(value)
 	schema[1].options[4].children[5].callback = func(_id): apply_resolution()
 	schema[2].options[0].value = "GODOT " + str(Engine.get_version_info()["string"])
+	# Append after About to retain the existing Voice / UI / About tab indices.
+	schema.append(DemoBindings.make_tab(apply_binding))
 	if not $Settings.configure(schema):
 		push_error($Settings.last_error)
 		return
+	DemoBindings.apply_defaults($Settings)
 	$Settings/Tabs.tab_changed.connect(func(_index): update_status())
+
+func apply_binding(value: Variant, id: String) -> void:
+	DemoBindings.apply_value(value, id)
+	show_demo("已更新按键：" + id.trim_prefix(DemoBindings.ACTION_PREFIX))
 
 func toggle_window_options(expanded: bool) -> void:
 	$Settings.get_control("window_options").button_pressed = expanded

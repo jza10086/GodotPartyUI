@@ -1,5 +1,6 @@
 extends Control
 ## Run this scene with F6. Actual callback output updates Preview and a read-only row.
+const DemoBindings = preload("res://settings/demo_bindings.gd")
 var applied: Dictionary = {}
 var callback_count := 0
 
@@ -19,11 +20,21 @@ func _ready() -> void:
 		{"id": "divider1", "type": "divider"},
 		{"id": "help", "type": "note", "text": "Callbacks update the preview and print (id, value).\nNo audio capture, networking or disk writes."}
 	]}]
+	tabs.append(DemoBindings.make_tab(apply_binding))
 	if not page.configure(tabs):
 		push_error(page.last_error)
 		return
+	DemoBindings.apply_defaults(page)
 	page.get_node("Back").text = "Rebuild / reset demo"
-	page.back_requested.connect(func(): page.configure(tabs); callback_count = 0; applied.clear(); $Preview.text = "Rebuilt: initialization emits no callbacks")
+	page.back_requested.connect(func():
+		if not page.configure(tabs):
+			push_error(page.last_error)
+			return
+		DemoBindings.apply_defaults(page)
+		callback_count = 0
+		applied.clear()
+		$Preview.text = "Rebuilt: initialization emits no callbacks"
+	)
 
 func apply_setting(value: Variant, id: String) -> void:
 	applied[id] = value
@@ -35,6 +46,10 @@ func apply_setting(value: Variant, id: String) -> void:
 	$Preview.modulate = Color(0.2, 0.55, 0.3) if bool($Settings.get_value("enabled")) else Color(0.55, 0.25, 0.25)
 	print("APPLIED ", message)
 
+func apply_binding(value: Variant, id: String) -> void:
+	DemoBindings.apply_value(value, id)
+	apply_setting(value, id)
+
 func reset_gain(_id: String) -> void:
 	$Settings.set_value("gain", 0.75)
 	$Preview.text = "Gain reset silently; callbacks: %d" % callback_count
@@ -44,6 +59,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_tree().change_scene_to_file("res://main.tscn")
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F12:
 		_capture_demo()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		var action := DemoBindings.action_for_event(event)
+		if not action.is_empty():
+			$Preview.text = "INPUT MAP: %s  |  callbacks: %d" % [action, callback_count]
+			$Preview.modulate = Color(0.2, 0.4, 0.65)
+			get_viewport().set_input_as_handled()
 
 func _capture_demo() -> void:
 	if DisplayServer.get_name() == "headless": return
