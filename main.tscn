@@ -1,4 +1,6 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://ui/theme/theme_color_rect.gd" id="color_binding"]
 
 [ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
 
@@ -38,86 +40,100 @@ offset_left = 0.0
 offset_top = 0.0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(0.91,0.91,0.90,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_background"
 
 [node name="FarLeft" type="ColorRect" parent="DisplayBackground"]
 offset_left = 0.0
 offset_top = 404.0
 offset_right = 710.0
 offset_bottom = 804.0
-color = Color(0.84,0.84,0.84,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_far_left"
 
 [node name="FarCenter" type="ColorRect" parent="DisplayBackground"]
 offset_left = 710.0
 offset_top = 344.0
 offset_right = 1176.0
 offset_bottom = 804.0
-color = Color(0.86,0.86,0.86,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_far_center"
 
 [node name="FarRight" type="ColorRect" parent="DisplayBackground"]
 offset_left = 1480.0
 offset_top = 380.0
 offset_right = 1920.0
 offset_bottom = 804.0
-color = Color(0.82,0.82,0.82,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_far_right"
 
 [node name="NearLeft" type="ColorRect" parent="DisplayBackground"]
 offset_left = 0.0
 offset_top = 628.0
 offset_right = 944.0
 offset_bottom = 1080.0
-color = Color(0.77,0.77,0.77,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_near_left"
 
 [node name="NearRight" type="ColorRect" parent="DisplayBackground"]
 offset_left = 1340.0
 offset_top = 574.0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(0.76,0.76,0.76,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_near_right"
 
 [node name="Ground" type="ColorRect" parent="DisplayBackground"]
 offset_left = 0.0
 offset_top = 856.0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(0.7,0.7,0.7,1)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "display_ground"
 
 [node name="Horizon" type="ColorRect" parent="DisplayBackground"]
 offset_left = 0.0
 offset_top = 856.0
 offset_right = 1920.0
 offset_bottom = 858.0
-color = Color(0.50,0.50,0.49,1)
 mouse_filter = 2
 
+script = ExtResource("color_binding")
+color_role = "display_horizon"
+
 [node name="Placeholder" type="Label" parent="DisplayBackground"]
+theme_type_variation = "PartyLabelDisplayDisplayText"
 offset_left = 736.0
 offset_top = 414.0
 offset_right = 1776.0
 offset_bottom = 498.0
 text = "未来游戏画面"
-theme_override_font_sizes/font_size = 48
 mouse_filter = 2
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.39,0.39,0.38,1)
 
 [node name="Caption" type="Label" parent="DisplayBackground"]
+theme_type_variation = "PartyLabelBodyDisplayCaption"
 offset_left = 736.0
 offset_top = 504.0
 offset_right = 1776.0
 offset_bottom = 550.0
 text = "静态线框占位 · 后续可替换为游戏全景"
-theme_override_font_sizes/font_size = 24
 mouse_filter = 2
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.42,0.42,0.41,1)
 
 [node name="Home" parent="." instance=ExtResource("scene_home")]
 
@@ -143,14 +159,12 @@ theme_override_styles/panel = ExtResource("primary")
 mouse_filter = 2
 
 [node name="Text" type="Label" parent="Toast"]
+theme_type_variation = "PartyLabelBodyOnPrimary"
 offset_left = 12.0
 offset_top = 0.0
 offset_right = 688.0
 offset_bottom = 62.0
 text = "演示结束！返回大厅再来一局。"
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
-theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -167,43 +181,45 @@ offset_left = 0.0
 offset_top = 0.0
 offset_right = 704.0
 offset_bottom = 130.0
-color = Color(0.965,0.965,0.945,0.97)
 mouse_filter = 2
 
+script = ExtResource("color_binding")
+color_role = "status_backdrop"
+
 [node name="Keys" type="Label" parent="Status"]
+theme_type_variation = "PartyLabelMeta"
 offset_left = 24.0
 offset_top = 12.0
 offset_right = 680.0
 offset_bottom = 42.0
 text = "TAB 切换  /  ENTER 确认  /  ESC 返回  /  F1 标尺"
-theme_override_font_sizes/font_size = 20
 mouse_filter = 2
 
 [node name="Engine" type="Label" parent="Status"]
+theme_type_variation = "PartyLabelDebug"
 offset_left = 24.0
 offset_top = 46.0
 offset_right = 680.0
 offset_bottom = 72.0
 text = ""
-theme_override_font_sizes/font_size = 19
 mouse_filter = 2
 
 [node name="Protocol" type="Label" parent="Status"]
+theme_type_variation = "PartyLabelDebug"
 offset_left = 24.0
 offset_top = 72.0
 offset_right = 680.0
 offset_bottom = 98.0
 text = ""
-theme_override_font_sizes/font_size = 19
 mouse_filter = 2
 
 [node name="Scene" type="Label" parent="Status"]
+theme_type_variation = "PartyLabelDebug"
 offset_left = 24.0
 offset_top = 98.0
 offset_right = 680.0
 offset_bottom = 124.0
 text = ""
-theme_override_font_sizes/font_size = 19
 mouse_filter = 2
 
 [node name="Guide" type="Control" parent="."]
@@ -220,62 +236,76 @@ offset_left = 96.0
 offset_top = 0.0
 offset_right = 97.0
 offset_bottom = 1080.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="X528" type="ColorRect" parent="Guide"]
 offset_left = 528.0
 offset_top = 0.0
 offset_right = 529.0
 offset_bottom = 1080.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="X1824" type="ColorRect" parent="Guide"]
 offset_left = 1824.0
 offset_top = 0.0
 offset_right = 1825.0
 offset_bottom = 1080.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="Y204" type="ColorRect" parent="Guide"]
 offset_left = 0.0
 offset_top = 204.0
 offset_right = 1920.0
 offset_bottom = 205.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="Y400" type="ColorRect" parent="Guide"]
 offset_left = 0.0
 offset_top = 400.0
 offset_right = 1920.0
 offset_bottom = 401.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="Y852" type="ColorRect" parent="Guide"]
 offset_left = 0.0
 offset_top = 852.0
 offset_right = 1920.0
 offset_bottom = 853.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "ruler"
 
 [node name="Y902" type="ColorRect" parent="Guide"]
 offset_left = 0.0
 offset_top = 902.0
 offset_right = 1920.0
 offset_bottom = 903.0
-color = Color(0.35,0.35,0.35,0.6)
 mouse_filter = 2
 
+script = ExtResource("color_binding")
+color_role = "ruler"
+
 [node name="Measure" type="Label" parent="Guide"]
+theme_type_variation = "PartyLabelNote"
 offset_left = 620.0
 offset_top = 40.0
 offset_right = 1820.0
 offset_bottom = 84.0
 text = "1920 × 1080  |  MENU 432  |  DISPLAY 1920 × 1080"
-theme_override_font_sizes/font_size = 22
 mouse_filter = 2

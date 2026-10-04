@@ -1,5 +1,5 @@
 @tool
-extends ColorRect
+extends "res://ui/theme/theme_color_rect.gd"
 ## Keep the original ColorRect's layout/API, but draw through an editable child
 ## so an expanded group's closing edge can omit the unwanted outer segment.
 func _process(_delta: float) -> void:

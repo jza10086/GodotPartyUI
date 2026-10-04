@@ -1,65 +1,6 @@
-[gd_resource type="Theme" load_steps=6 format=3]
+[gd_resource type="Theme" load_steps=2 format=3]
 
-[ext_resource type="FontFile" path="res://assets/NotoSansSC-UI.otf" id="2"]
-
-[ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
-
-[ext_resource type="StyleBox" path="res://ui/theme/muted.tres" id="muted"]
-
-[sub_resource type="StyleBoxFlat" id="hover"]
-bg_color = Color(0.73,0.73,0.70,1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.1,0.1,0.1,1)
-
-[sub_resource type="StyleBoxFlat" id="focus"]
-bg_color = Color(0,0,0,0)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.48,0.48,0.46,1)
-expand_margin_left = 6.0
-expand_margin_top = 6.0
-expand_margin_right = 6.0
-expand_margin_bottom = 6.0
+[ext_resource type="Script" path="res://ui/theme/party_theme.gd" id="theme"]
 
 [resource]
-default_font = ExtResource("2")
-default_font_size = 24
-Button/styles/normal = ExtResource("card")
-Button/styles/hover = SubResource("hover")
-Button/styles/pressed = SubResource("hover")
-Button/styles/focus = SubResource("focus")
-Button/colors/font_color = Color(0.16,0.16,0.16,1)
-Button/colors/font_focus_color = Color(0.16,0.16,0.16,1)
-Button/colors/font_disabled_color = Color(0.40,0.40,0.38,1)
-Button/styles/disabled = ExtResource("muted")
-CheckButton/colors/font_focus_color = Color(0.16,0.16,0.16,1)
-CheckButton/colors/font_hover_color = Color(0.16,0.16,0.16,1)
-CheckButton/colors/font_pressed_color = Color(0.16,0.16,0.16,1)
-Button/colors/font_hover_color = Color(0.1,0.1,0.1,1)
-Button/colors/font_pressed_color = Color(0.1,0.1,0.1,1)
-Button/colors/font_hover_pressed_color = Color(0.1,0.1,0.1,1)
-Label/colors/font_color = Color(0.16,0.16,0.16,1)
-
-OptionButton/colors/font_color = Color(0.16,0.16,0.16,1)
-OptionButton/styles/normal = ExtResource("card")
-OptionButton/styles/hover = ExtResource("card")
-OptionButton/styles/pressed = ExtResource("card")
-LineEdit/colors/font_color = Color(0.16,0.16,0.16,1)
-LineEdit/colors/font_placeholder_color = Color(0.40,0.40,0.38,1)
-LineEdit/colors/caret_color = Color(0.16,0.16,0.16,1)
-LineEdit/styles/normal = ExtResource("card")
-PopupMenu/colors/font_color = Color(0.16,0.16,0.16,1)
-PopupMenu/styles/panel = ExtResource("card")
-OptionButton/colors/font_focus_color = Color(0.16,0.16,0.16,1)
-OptionButton/colors/font_hover_color = Color(0.16,0.16,0.16,1)
-OptionButton/colors/font_pressed_color = Color(0.16,0.16,0.16,1)
-PopupMenu/colors/font_hover_color = Color(0.1,0.1,0.1,1)
-PopupMenu/styles/hover = SubResource("hover")
-PopupMenu/constants/v_separation = 18
-LineEdit/styles/focus = SubResource("focus")
-LineEdit/constants/minimum_character_width = 6
+script = ExtResource("theme")

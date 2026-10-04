@@ -23,52 +23,49 @@ theme_override_styles/panel = ExtResource("card")
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelDialogTitle"
 offset_left = 600.0
 offset_top = 312.0
 offset_right = 1320.0
 offset_bottom = 372.0
 text = "玩法协议"
-theme_override_font_sizes/font_size = 42
 
 [node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
 offset_left = 600.0
 offset_top = 388.0
 offset_right = 1320.0
 offset_bottom = 430.0
 text = "选择界面演示；未接入真实玩法协议"
-theme_override_font_sizes/font_size = 23
 
 [node name="Option0" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
 offset_left = 600.0
 offset_top = 458.0
 offset_right = 1320.0
 offset_bottom = 530.0
 text = "派对示例 A"
-theme_override_font_sizes/font_size = 28
 
 [node name="Option1" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
 offset_left = 600.0
 offset_top = 548.0
 offset_right = 1320.0
 offset_bottom = 620.0
 text = "派对示例 B"
-theme_override_font_sizes/font_size = 28
 
 [node name="Selected" type="Label" parent="."]
+theme_type_variation = "PartyLabelBody"
 offset_left = 600.0
 offset_top = 638.0
 offset_right = 1320.0
 offset_bottom = 678.0
 text = "当前选择：派对示例 A"
-theme_override_font_sizes/font_size = 24
 
 [node name="Close" type="Button" parent="."]
+theme_type_variation = "PartyButtonActionPrimary"
 offset_left = 1000.0
 offset_top = 700.0
 offset_right = 1320.0
 offset_bottom = 772.0
 text = "完成"
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = ExtResource("primary")
-theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
-theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)

@@ -19,7 +19,7 @@
         "node_name": "DeviceNote",
         "text": "系统默认选项；未启用麦克风",
         "height": 38,
-        "font_size": 21
+        "font_role": "Detail"
       },
       {
         "id": "voice.DeviceDivider",
@@ -52,7 +52,7 @@
         "node_name": "Note",
         "text": "原型：设备与输入增益仅保存选择，不采集或传输语音。\n输入音量不改变扬声器或 Master 输出音量。",
         "height": 90,
-        "font_size": 23
+        "font_role": "Secondary"
       }
     ]
   },
@@ -143,7 +143,7 @@
             "node_name": "RangeNote",
             "text": "宽 640–7680 px · 高 360–4320 px · 精度 1 px",
             "height": 42,
-            "font_size": 21
+            "font_role": "Detail"
           },
           {
             "id": "apply_resolution",
@@ -164,7 +164,7 @@
         "node_name": "Note",
         "text": "数值可直接输入，按 Enter 或移开焦点后四舍五入。\n音量精度 1%；UI 音效为占位，显示偏好仅保留当前会话。",
         "height": 90,
-        "font_size": 23
+        "font_role": "Secondary"
       }
     ]
   },
@@ -208,7 +208,7 @@
         "node_name": "Note",
         "text": "主游戏负责其房间设置；本页用于全局框架偏好。",
         "height": 90,
-        "font_size": 23
+        "font_role": "Secondary"
       }
     ]
   }

@@ -23,48 +23,44 @@ theme_override_styles/panel = ExtResource("card")
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelCompactTitle"
 offset_left = 600.0
 offset_top = 310.0
 offset_right = 1320.0
 offset_bottom = 374.0
 text = "IP 直连 · 模拟"
-theme_override_font_sizes/font_size = 40
 
 [node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
 offset_left = 600.0
 offset_top = 386.0
 offset_right = 1320.0
 offset_bottom = 426.0
 text = "仅预览加入流程，不建立真实网络连接"
-theme_override_font_sizes/font_size = 23
 
 [node name="Error" type="Label" parent="."]
+theme_type_variation = "PartyLabelNoteError"
 offset_left = 600.0
 offset_top = 642.0
 offset_right = 1320.0
 offset_bottom = 678.0
 text = ""
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0.65,0.15,0.12,1)
 
 [node name="Cancel" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
 offset_left = 600.0
 offset_top = 700.0
 offset_right = 900.0
 offset_bottom = 772.0
 text = "取消"
-theme_override_font_sizes/font_size = 28
 
 [node name="Confirm" type="Button" parent="."]
+theme_type_variation = "PartyButtonActionPrimary"
 offset_left = 936.0
 offset_top = 700.0
 offset_right = 1320.0
 offset_bottom = 772.0
 text = "模拟加入"
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = ExtResource("primary")
-theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
-theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)
 
 [node name="AddressLabel" type="Label" parent="."]
 offset_left = 600.0

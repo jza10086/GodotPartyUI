@@ -10,6 +10,12 @@
 
 初始窗口 1280×720，原生设计视口 **1920×1080**，统一缩放保持 16:9。无需插件、账号或网络。
 
+## 统一配色与字体
+
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
+
+普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
+
 ## 通用设置页（本轮新增）
 
 - 可复用场景：`settings/settings_page.tscn`，实现：`settings/settings_page.gd`
@@ -131,9 +137,12 @@ godot --headless --path . --script res://tests/test_settings_connected_dividers.
 godot --headless --path . --script res://tests/test_room_profile.gd
 godot --headless --path . --script res://tests/test_keybindings.gd
 godot --headless --path . --script res://tests/test_scene_components.gd
+godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+统一视觉配置专项 **1361 项**：全局字体、全部 RGBA 与字号层级、旧/新实例和动态 schema、所有背景/遮罩、native 控件状态、下拉箭头及菜单 radio/check 图标像素与未选态透明度、tooltip、开关动画、局部 override、Theme/StyleBox/PackedScene 保存重载与连接清理。连同既有 1796 项，共 **3157 项通过**，另通过空缓存首次 import、普通 import、真实退出信号和主界面/独立示例 headless smoke。
 
 新增场景组件测试 **54 项**：全部组件独立实例化、各 schema 类型、场景尺寸保留、嵌套层级线伸缩和折叠、居中 tooltip、捕获层信号、页签悬停边距。连同既有 476 项，共 **530 项通过**，另通过独立退出确认测试。主页面与弹窗分拆保持业务控件路径、几何与样式不变；每个弹窗自带可编辑的 Dialog 背景，打开弹窗不覆盖面板尺寸。
 

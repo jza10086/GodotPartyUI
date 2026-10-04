@@ -69,6 +69,9 @@ func _validate_options(options: Array, ids: Dictionary) -> bool:
 		var type: String = spec.get("type", "")
 		if type not in ["label", "select", "toggle", "number", "slider", "note", "divider", "action", "group", "keybinding", "bindings_header"]:
 			return _fail("Unknown option type")
+		if type == "note" and spec.has("font_role"):
+			if not spec.font_role is String or not preload("res://ui/theme/party_theme.gd").TYPE_SIZES.has(spec.font_role):
+				return _fail("Unknown note font_role")
 		if spec.has("callback") and not spec.callback is Callable:
 			return _fail("callback must be a Callable")
 		if type in ["number", "slider"]:
@@ -276,6 +279,7 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 		root_node = control
 		if type == "note":
 			control.text = str(spec.get("text", ""))
+			if spec.has("font_role"): control.theme_type_variation = "PartyLabel" + str(spec.font_role)
 			if spec.has("font_size"): control.add_theme_font_size_override("font_size", spec.font_size)
 			if spec.has("height"): control.custom_minimum_size.y = spec.height
 		elif type in ["action", "group"]:

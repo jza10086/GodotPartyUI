@@ -23,57 +23,54 @@ theme_override_styles/panel = ExtResource("card")
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelDialogTitle"
 offset_left = 600.0
 offset_top = 308.0
 offset_right = 1320.0
 offset_bottom = 368.0
 text = "高级设置"
-theme_override_font_sizes/font_size = 42
 mouse_filter = 2
 
 [node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
 offset_left = 600.0
 offset_top = 386.0
 offset_right = 1320.0
 offset_bottom = 426.0
 text = "演示选项 · 仅在当前会话中保留"
-theme_override_font_sizes/font_size = 23
 mouse_filter = 2
 
 [node name="Shuffle" type="CheckButton" parent="."]
+theme_type_variation = "PartyCheckButtonBody"
 offset_left = 600.0
 offset_top = 450.0
 offset_right = 1320.0
 offset_bottom = 506.0
 text = "随机地图顺序"
 button_pressed = true
-theme_override_colors/font_color = Color(0.16,0.16,0.16,1)
 
 [node name="Items" type="CheckButton" parent="."]
+theme_type_variation = "PartyCheckButtonBody"
 offset_left = 600.0
 offset_top = 520.0
 offset_right = 1320.0
 offset_bottom = 576.0
 text = "启用游戏道具"
 button_pressed = true
-theme_override_colors/font_color = Color(0.16,0.16,0.16,1)
 
 [node name="Teams" type="CheckButton" parent="."]
+theme_type_variation = "PartyCheckButtonBody"
 offset_left = 600.0
 offset_top = 590.0
 offset_right = 1320.0
 offset_bottom = 646.0
 text = "自动平衡队伍"
 button_pressed = false
-theme_override_colors/font_color = Color(0.16,0.16,0.16,1)
 
 [node name="Close" type="Button" parent="."]
+theme_type_variation = "PartyButtonSettingPrimary"
 offset_left = 1000.0
 offset_top = 700.0
 offset_right = 1320.0
 offset_bottom = 772.0
 text = "完成"
-theme_override_font_sizes/font_size = 26
-theme_override_styles/normal = ExtResource("primary")
-theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
-theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)

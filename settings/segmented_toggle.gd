@@ -1,7 +1,19 @@
+@tool
 extends Button
+const Config = preload("res://ui/theme/ui_config.gd")
 ## Boolean Button-compatible control. Click anywhere toggles the selection.
 ## Left = false, right = true; no dragging required.
 ## One tab stop; Space/Enter toggle, Left/Right choose a value.
+@export var use_global_colors := true:
+	set(value):
+		use_global_colors = value
+		queue_redraw()
+@export var configuration: Config = preload("res://ui/theme/ui_config.tres"):
+	set(value):
+		if configuration != null and configuration.changed.is_connected(queue_redraw): configuration.changed.disconnect(queue_redraw)
+		configuration = value
+		_connect_config()
+		queue_redraw()
 @export var duration := 0.20
 @export var inactive_text_color := Color(0.16, 0.16, 0.16)
 @export var active_text_color := Color(0.98, 0.98, 0.96)
@@ -14,8 +26,18 @@ var _slide := 0.0:
 		queue_redraw()
 var _tween: Tween
 var _initialized := false
+var _label_themes: Array[Theme] = []
+
+func _connect_config() -> void:
+	if configuration != null and not configuration.changed.is_connected(queue_redraw): configuration.changed.connect(queue_redraw)
 
 func _ready() -> void:
+	_connect_config()
+	# Generated Themes are lower priority than the labels' native overrides.
+	# Recreate on ready, so saving an editor preview cannot freeze an old color.
+	_label_themes = [Theme.new(), Theme.new()]
+	$Off.theme = _label_themes[0]
+	$On.theme = _label_themes[1]
 	resized.connect(queue_redraw)
 	focus_entered.connect(queue_redraw)
 	focus_exited.connect(queue_redraw)
@@ -58,7 +80,10 @@ func _draw() -> void:
 	$On.text = on_text
 	for index in range(2):
 		var amount := _slide if index else 1.0 - _slide
-		var color := inactive_text_color.lerp(active_text_color, amount)
-		if disabled: color.a = 0.45
-		($On if index else $Off).add_theme_color_override("font_color", color)
-	if has_focus(): draw_rect(Rect2(Vector2.ZERO, size).grow(5), focus_color, false, 3.0)
+		var inactive := configuration.text if use_global_colors else inactive_text_color
+		var active := configuration.toggle_active_text if use_global_colors else active_text_color
+		var color := inactive.lerp(active, amount)
+		if disabled: color.a *= configuration.disabled_opacity
+		if _label_themes.size() == 2 and (not _label_themes[index].has_color("font_color", "Label") or _label_themes[index].get_color("font_color", "Label") != color):
+			_label_themes[index].set_color("font_color", "Label", color)
+	if has_focus(): draw_rect(Rect2(Vector2.ZERO, size).grow(5), configuration.focus if use_global_colors else focus_color, false, 3.0)

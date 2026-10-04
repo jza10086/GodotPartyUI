@@ -23,95 +23,93 @@ theme_override_styles/panel = ExtResource("card")
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelSubheading"
 offset_left = 580.0
 offset_top = 208.0
 offset_right = 1340.0
 offset_bottom = 272.0
 text = "创建房间"
-theme_override_font_sizes/font_size = 38
 
 [node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelNote"
 offset_left = 580.0
 offset_top = 272.0
 offset_right = 1340.0
 offset_bottom = 308.0
 text = "MOCK 示例游戏 · 尚未接入真实玩法"
-theme_override_font_sizes/font_size = 22
 
 [node name="GameLabel" type="Label" parent="."]
+theme_type_variation = "PartyLabelSetting"
 offset_left = 580.0
 offset_top = 328.0
 offset_right = 760.0
 offset_bottom = 386.0
 text = "主游戏"
-theme_override_font_sizes/font_size = 26
 mouse_filter = 2
 
 [node name="Game" type="Button" parent="."]
+theme_type_variation = "PartyButtonSetting"
 offset_left = 792.0
 offset_top = 328.0
 offset_right = 1340.0
 offset_bottom = 386.0
-theme_override_font_sizes/font_size = 26
 text = "派对竞赛  ↓"
 alignment = 0
 
 [node name="DropdownNote" type="Label" parent="."]
+theme_type_variation = "PartyLabelDetail"
 offset_left = 580.0
 offset_top = 686.0
 offset_right = 1340.0
 offset_bottom = 716.0
 text = "仅本地模拟 · 密码与公开性不进行真实访问控制"
-theme_override_font_sizes/font_size = 21
 mouse_filter = 2
 
 [node name="Cancel" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
 offset_left = 580.0
 offset_top = 746.0
 offset_right = 880.0
 offset_bottom = 818.0
 text = "取消"
-theme_override_font_sizes/font_size = 28
 
 [node name="Confirm" type="Button" parent="."]
+theme_type_variation = "PartyButtonActionPrimary"
 offset_left = 920.0
 offset_top = 746.0
 offset_right = 1340.0
 offset_bottom = 818.0
 text = "创建房间"
-theme_override_font_sizes/font_size = 28
-theme_override_styles/normal = ExtResource("primary")
-theme_override_colors/font_color = Color(0.96,0.96,0.94,1)
-theme_override_colors/font_focus_color = Color(0.96,0.96,0.94,1)
 
 [node name="RoomNameLabel" type="Label" parent="."]
+theme_type_variation = "PartyLabelPlayer"
 offset_left = 580.0
 offset_top = 410.0
 offset_right = 780.0
 offset_bottom = 468.0
 text = "房间名称"
-theme_override_font_sizes/font_size = 25
 mouse_filter = 2
 
 [node name="RoomName" type="LineEdit" parent="."]
+theme_type_variation = "PartyLineEditBody"
 offset_left = 792.0
 offset_top = 410.0
 offset_right = 1340.0
 offset_bottom = 468.0
 max_length = 24
 placeholder_text = "1–24 字"
-theme_override_font_sizes/font_size = 24
 
 [node name="PasswordLabel" type="Label" parent="."]
+theme_type_variation = "PartyLabelPlayer"
 offset_left = 580.0
 offset_top = 492.0
 offset_right = 780.0
 offset_bottom = 550.0
 text = "密码（可选）"
-theme_override_font_sizes/font_size = 25
 mouse_filter = 2
 
 [node name="Password" type="LineEdit" parent="."]
+theme_type_variation = "PartyLineEditBody"
 offset_left = 792.0
 offset_top = 492.0
 offset_right = 1340.0
@@ -119,15 +117,14 @@ offset_bottom = 550.0
 max_length = 32
 secret = true
 placeholder_text = "留空则无需密码 · 最多 32 字"
-theme_override_font_sizes/font_size = 24
 
 [node name="VisibilityLabel" type="Label" parent="."]
+theme_type_variation = "PartyLabelPlayer"
 offset_left = 580.0
 offset_top = 574.0
 offset_right = 780.0
 offset_bottom = 632.0
 text = "房间公开性"
-theme_override_font_sizes/font_size = 25
 mouse_filter = 2
 
 [node name="Visibility" type="OptionButton" parent="."]
@@ -145,13 +142,12 @@ popup/item_2/text = "仅限邀请"
 popup/item_2/id = 2
 
 [node name="Error" type="Label" parent="."]
+theme_type_variation = "PartyLabelNoteError"
 offset_left = 580.0
 offset_top = 644.0
 offset_right = 1340.0
 offset_bottom = 678.0
 text = ""
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0.65,0.15,0.12,1)
 
 [node name="DropdownDismiss" type="Control" parent="."]
 visible = false
@@ -181,85 +177,85 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Option0" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "派对竞赛"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option1" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "合作挑战"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option2" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "欢乐乱斗"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option3" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "障碍冲刺"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option4" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "节奏接力"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option5" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "迷宫探险"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option6" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "糖果争夺"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option7" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "星空躲避"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option8" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "平台跳跃"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option9" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "团队解谜"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option10" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "海岛寻宝"
 alignment = 0
-theme_override_font_sizes/font_size = 26
 
 [node name="Option11" type="Button" parent="Dropdown/Scroll/Items"]
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 text = "极速跑酷"
 alignment = 0
-theme_override_font_sizes/font_size = 26

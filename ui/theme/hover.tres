@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("style")
-color_role = "surface"
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+color_role = "hover_surface"
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3

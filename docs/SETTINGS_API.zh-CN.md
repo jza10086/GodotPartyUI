@@ -431,3 +431,9 @@ func apply_binding(value: Variant, id: String) -> void:
 动态数据需要运行时实例化，因此页签实际业务内容在运行后出现；无需把每一种配置烘焙成独立场景。单个组件可独立打开、编辑和实例化。新增 `tests/test_scene_components.gd` 覆盖全部组件加载、API 组装、布局默认值、层级线伸缩/折叠、居中提示、捕获弹层与 hover 边距。
 
 主界面弹窗位于 `ui/dialogs/*.tscn`，各自拥有 `Dialog` 背景节点。可在对应场景修改背景的位置、大小与样式；`open_modal()` 只控制显隐和业务值，不再写死面板几何。原内部共享背景 `Modal/Dialog` 已替换成 `Modal/<弹窗名>/Dialog`，业务控件路径与设置 API 不变。
+
+## 统一视觉配置
+
+全局字体、字号、RGBA（含背景、卡片、页签、输入框、hover/disabled/focus、错误文字、tooltip、遮罩、层级线与开关动画）统一由 `ui/theme/ui_config.tres` 配置，设置页直接使用共享 Theme。详见 [统一配色与字体](THEME.zh-CN.md)。
+
+说明项 `note` 可使用 `font_role: "Detail"` / `"Secondary"` 等命名字号，随全局资源更新；原有 `font_size` 仍是显式局部像素覆盖，优先于 `font_role`。普通 Control 的 Theme Overrides 不会被刷新逻辑删除。ColorRect / Line2D 要单独配色时先关闭 `Use Global Color`，再改 Color / Default Color；开关根节点通过 `Use Global Colors` 选择全局或局部动画文字色。尺寸、边距、行高、线宽仍编辑组件场景。

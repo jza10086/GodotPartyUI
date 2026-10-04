@@ -1,21 +1,21 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="shared_theme"]
+
+[ext_resource type="Script" path="res://ui/theme/theme_color_rect.gd" id="color_binding"]
 
 [ext_resource type="Script" path="res://settings/segmented_toggle.gd" id="script"]
+[ext_resource type="StyleBox" path="res://ui/theme/toggle_track.tres" id="track"]
+
 [sub_resource type="StyleBoxEmpty" id="empty"]
-[sub_resource type="StyleBoxFlat" id="track"]
-bg_color = Color(0.84,0.84,0.81,1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.38,0.38,0.36,1)
 
 [node name="Toggle" type="Button"]
+theme = ExtResource("shared_theme")
+theme_type_variation = "PartyButtonSetting"
 custom_minimum_size = Vector2(0, 64)
 size_flags_horizontal = 3
 size_flags_vertical = 4
 mouse_filter = 1
-theme_override_font_sizes/font_size = 26
 toggle_mode = true
 script = ExtResource("script")
 theme_override_styles/normal = SubResource("empty")
@@ -30,7 +30,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("track")
+theme_override_styles/panel = ExtResource("track")
 
 [node name="Selection" type="ColorRect" parent="."]
 anchor_right = 0.5
@@ -39,26 +39,25 @@ offset_left = 4.0
 offset_top = 4.0
 offset_bottom = -4.0
 mouse_filter = 2
-color = Color(0.14,0.14,0.14,1)
+
+script = ExtResource("color_binding")
+color_role = "primary"
 
 [node name="Off" type="Label" parent="."]
+theme_type_variation = "PartyLabelSettingOnPrimary"
 anchor_right = 0.5
 anchor_bottom = 1.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 26
-theme_override_colors/font_color = Color(0.98,0.98,0.96,1)
 text = "关"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="On" type="Label" parent="."]
+theme_type_variation = "PartyLabelSetting"
 anchor_left = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 26
-theme_override_colors/font_color = Color(0.16,0.16,0.16,1)
 text = "开"
 horizontal_alignment = 1
 vertical_alignment = 1
-
