@@ -1,10 +1,13 @@
 extends Control
 ## Run this scene with F6. Actual callback output updates Preview and a read-only row.
 const DemoBindings = preload("res://settings/demo_bindings.gd")
+const UI_CONFIG = preload("res://ui/theme/ui_config.tres")
+var _preview_color_role := ""
 var applied: Dictionary = {}
 var callback_count := 0
 
 func _ready() -> void:
+	UI_CONFIG.changed.connect(_update_preview_color)
 	var page := $Settings
 	var tabs := [{"id": "Demo", "title": "API DEMO", "options": [
 		{"id": "summary", "type": "label", "label": "CALLBACK", "value": "Change a value below"},
@@ -43,7 +46,8 @@ func apply_setting(value: Variant, id: String) -> void:
 	$Settings.set_value("summary", message)
 	$Preview.text = message
 	# A concrete visible application, independent from the settings widgets.
-	$Preview.modulate = Color(0.2, 0.55, 0.3) if bool($Settings.get_value("enabled")) else Color(0.55, 0.25, 0.25)
+	_preview_color_role = "success" if bool($Settings.get_value("enabled")) else "demo_inactive"
+	_update_preview_color()
 	print("APPLIED ", message)
 
 func apply_binding(value: Variant, id: String) -> void:
@@ -63,7 +67,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		var action := DemoBindings.action_for_event(event)
 		if not action.is_empty():
 			$Preview.text = "INPUT MAP: %s  |  callbacks: %d" % [action, callback_count]
-			$Preview.modulate = Color(0.2, 0.4, 0.65)
+			_preview_color_role = "info"
+			_update_preview_color()
 			get_viewport().set_input_as_handled()
 
 func _capture_demo() -> void:
@@ -73,3 +78,6 @@ func _capture_demo() -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
 	var path := dir.path_join("17_settings_api_demo.png")
 	print("SCREENSHOT ", path, " error=", get_viewport().get_texture().get_image().save_png(path))
+
+func _update_preview_color() -> void:
+	$Preview.modulate = Color.WHITE if _preview_color_role.is_empty() else UI_CONFIG.get(_preview_color_role)

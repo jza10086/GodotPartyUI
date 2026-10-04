@@ -205,7 +205,7 @@ if not settings.add_option("display", {
 
 ### 默认行分隔线
 
-`configure()` 和 `add_option()` 默认在相邻可见设置行之间生成 1 px 灰色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理；分组内任意层级的子行也自动分隔。
+`configure()` 和 `add_option()` 默认在顶层相邻可见设置行之间生成 1 px 灰色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理。折叠组内各层普通子行之间不再画自动长横线，仅由层级竖线和行中心短支线连接，与按键绑定一致；展开子组之后的收尾边界仍保留。
 
 显式 `divider` 与 `note` 是段落边界，不会叠加自动线，因此已有手动分隔布局保持原样。条件隐藏行不会留下多余线或首尾线；折叠分组时其内部线随子项隐藏。自动线不占用设置 ID，也不会出现在 `get_values()` 或触发回调。
 
@@ -407,3 +407,33 @@ func apply_binding(value: Variant, id: String) -> void:
 ```
 
 可运行参考见 `settings/demo_bindings.gd`、`main.gd` 和 `examples/settings_demo.gd`。示例创建的 `party_demo_*` 动作只保留在当前进程，不调用 `ProjectSettings.save()`；重建示例会重新应用默认绑定，且回调计数仍从零开始。当前未实现文件持久化、鼠标 / 手柄重绑定或跨设置页实例的全局冲突管理。
+
+
+## 可编辑组件场景（场景化布局）
+
+设置页不再在脚本里创建和排列控件。`settings_page.gd` 保留 schema 校验、数据绑定、动态实例化、信号、可见性和输入路由；所有静态布局使用 `settings/components/` 中的 PackedScene。API、稳定 ID、Callable 参数与回调语义不变，已有接入代码可继续使用。
+
+可在编辑器直接打开并修改：
+
+- `tab_content.tscn`：页签的 ScrollContainer、Padding、Content，调内边距和行间距
+- `label_row.tscn`、`select_row.tscn`、`number_row.tscn`、`slider_row.tscn`、`toggle_row.tscn`：名称与值控件、行高、列宽、字号和对齐；滑块行包含独立精确数值框
+- `action.tscn`、`note.tscn`、`divider.tscn`、`group.tscn`：动作、说明、水平分隔线与展开按钮
+- `group_details.tscn`：嵌套缩进与子行间距，`HierarchyLine` 为竖线，`HeaderConnection` 从展开箭头中心垂直接入竖线，`BranchTemplate` 为隐藏的短横线模板；均可编辑颜色、粗细。运行时竖线的 x 与展开箭头中心严格对齐；按按钮当前状态及 align_to_largest_stylebox 解析真实样式边距，修改箭头样式左边距会同步移动连接线，不保留与箭头冲突的竖线 x。根据实际排版把竖线向上接到展开箭头中心，并在每个可见子项（含说明）的行中心连接到内容左边缘。`Branches` 中的线由模板生成，折叠/条件隐藏时同步隐藏；空组不画悬空竖线
+- `divider.tscn`：根 ColorRect 保留原布局、颜色与 API，通过透明 `self_modulate` 只隐藏根节点本身的绘制，子节点 `Stroke` 绘制实际分隔线。折叠组内普通相邻子行不显示自动长分隔线；顶层分隔和显式 divider 保留。紧随展开区的收尾线从最深末级竖线开始，不再向左穿过外层缩进。不要删除 Stroke、BranchTemplate、Branches、HeaderConnection 或 HierarchyLine 节点
+- `keybinding.tscn`、`keybinding_group.tscn`、`bindings_header.tscn`：三列按键布局。三者 Function 列宽应保持一致；运行时只减去实际祖先缩进，以保持主/次按键列跨层级对齐
+- `binding_capture.tscn`：遮罩、面板、标题、提示、清除与取消按钮，均是可视节点
+- `tooltip.tscn`：提示文本水平和垂直居中；按键行控件通过 tooltip 脚本实例化，脚本只填文字
+- `segmented_toggle.tscn`：开关轨道、滑动选中块、左右标签。脚本仅处理键盘、状态、动画位置和随状态变化的文字颜色；颜色/文案/动画时长可在根节点导出属性中修改
+- `settings_page.tscn`：页面大小、返回按钮、主题、页签位置；hover/未选中页签共用相同边距，避免鼠标悬停造成文字偏移
+
+运行时不会每次重设场景里的字号、普通行尺寸、边距、间距和样式。schema 显式提供的 `row_height` / `label_width` / `font_size` / `height` 仍优先于场景默认值；标签、选项、数值范围、绑定提示等业务数据也由 schema 接管。`node_name` / `label_name` / `control_name` / `number_name` / `details_name` 仍可覆盖运行时名称。编辑组件时请保留脚本使用的节点名与结构（例如 Value、Label、Number、Rows、Function、Primary、Secondary）。复用设置页时应携带整个 `settings/components/` 目录。
+
+动态数据需要运行时实例化，因此页签实际业务内容在运行后出现；无需把每一种配置烘焙成独立场景。单个组件可独立打开、编辑和实例化。新增 `tests/test_scene_components.gd` 覆盖全部组件加载、API 组装、布局默认值、层级线伸缩/折叠、居中提示、捕获弹层与 hover 边距。
+
+主界面弹窗位于 `ui/dialogs/*.tscn`，各自拥有 `Dialog` 背景节点。可在对应场景修改背景的位置、大小与样式；`open_modal()` 只控制显隐和业务值，不再写死面板几何。原内部共享背景 `Modal/Dialog` 已替换成 `Modal/<弹窗名>/Dialog`，业务控件路径与设置 API 不变。
+
+## 统一视觉配置
+
+全局字体、字号、RGBA（含背景、卡片、页签、输入框、hover/disabled/focus、错误文字、tooltip、遮罩、层级线与开关动画）统一由 `ui/theme/ui_config.tres` 配置，设置页直接使用共享 Theme。详见 [统一配色与字体](THEME.zh-CN.md)。
+
+说明项 `note` 可使用 `font_role: "Detail"` / `"Secondary"` 等命名字号，随全局资源更新；原有 `font_size` 仍是显式局部像素覆盖，优先于 `font_role`。普通 Control 的 Theme Overrides 不会被刷新逻辑删除。ColorRect / Line2D 要单独配色时先关闭 `Use Global Color`，再改 Color / Default Color；开关根节点通过 `Use Global Colors` 选择全局或局部动画文字色。尺寸、边距、行高、线宽仍编辑组件场景。

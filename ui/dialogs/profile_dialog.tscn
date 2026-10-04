@@ -1,0 +1,107 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/primary.tres" id="primary"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/muted.tres" id="muted"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
+
+[node name="Profile" type="Control"]
+theme = ExtResource("theme")
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Dialog" type="Panel" parent="."]
+offset_left = 540.0
+offset_top = 270.0
+offset_right = 1380.0
+offset_bottom = 810.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelCompactTitle"
+offset_left = 600.0
+offset_top = 310.0
+offset_right = 1320.0
+offset_bottom = 374.0
+text = "玩家资料"
+
+[node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
+offset_left = 600.0
+offset_top = 386.0
+offset_right = 1320.0
+offset_bottom = 426.0
+text = "修改仅在当前会话中保留"
+
+[node name="Error" type="Label" parent="."]
+theme_type_variation = "PartyLabelNoteError"
+offset_left = 600.0
+offset_top = 642.0
+offset_right = 1320.0
+offset_bottom = 678.0
+text = ""
+
+[node name="Cancel" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
+offset_left = 600.0
+offset_top = 700.0
+offset_right = 900.0
+offset_bottom = 772.0
+text = "取消"
+
+[node name="Confirm" type="Button" parent="."]
+theme_type_variation = "PartyButtonActionPrimary"
+offset_left = 936.0
+offset_top = 700.0
+offset_right = 1320.0
+offset_bottom = 772.0
+text = "保存"
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = 600.0
+offset_top = 452.0
+offset_right = 750.0
+offset_bottom = 510.0
+text = "玩家名称"
+
+[node name="Name" type="LineEdit" parent="."]
+offset_left = 792.0
+offset_top = 452.0
+offset_right = 1320.0
+offset_bottom = 510.0
+max_length = 12
+placeholder_text = "1–12 字"
+
+[node name="Avatar" type="Panel" parent="."]
+offset_left = 600.0
+offset_top = 550.0
+offset_right = 672.0
+offset_bottom = 622.0
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("muted")
+
+[node name="Placeholder" type="Label" parent="Avatar"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 72.0
+offset_bottom = 72.0
+text = "头像"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="AvatarNote" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
+offset_left = 696.0
+offset_top = 550.0
+offset_right = 1320.0
+offset_bottom = 622.0
+text = "头像占位 · 暂不支持上传"
+vertical_alignment = 1

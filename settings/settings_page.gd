@@ -1,6 +1,6 @@
 class_name SettingsPage
 extends Control
-## Reusable runtime-generated settings. See docs/SETTINGS_API.zh-CN.md.
+## Reusable scene-based settings with schema-driven data binding. See docs/SETTINGS_API.zh-CN.md.
 signal setting_changed(id: String, value: Variant)
 signal back_requested
 signal binding_conflict(id: String, slot: int, conflicting_id: String)
@@ -69,6 +69,9 @@ func _validate_options(options: Array, ids: Dictionary) -> bool:
 		var type: String = spec.get("type", "")
 		if type not in ["label", "select", "toggle", "number", "slider", "note", "divider", "action", "group", "keybinding", "bindings_header"]:
 			return _fail("Unknown option type")
+		if type == "note" and spec.has("font_role"):
+			if not spec.font_role is String or not preload("res://ui/theme/party_theme.gd").TYPE_SIZES.has(spec.font_role):
+				return _fail("Unknown note font_role")
 		if spec.has("callback") and not spec.callback is Callable:
 			return _fail("callback must be a Callable")
 		if type in ["number", "slider"]:
@@ -234,31 +237,20 @@ func _action(id: String, generation: int) -> void:
 func _expanded(_value: bool, generation: int) -> void:
 	if generation == _generation: _refresh_visibility()
 
+func _component(name: String) -> Control:
+	return (load("res://settings/components/" + name + ".tscn") as PackedScene).instantiate()
+
 func _build_tab(tab: Dictionary) -> void:
-	var scroll := ScrollContainer.new()
+	var scroll := _component("tab_content") as ScrollContainer
 	scroll.name = tab.id
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.follow_focus = true
 	$Tabs.add_child(scroll)
 	$Tabs.set_tab_title(scroll.get_index(), str(tab.get("title", tab.id)))
-	var padding := MarginContainer.new()
-	padding.name = "Padding"
-	padding.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for side in ["left", "right", "top", "bottom"]: padding.add_theme_constant_override("margin_" + side, 48 if side in ["left", "right"] else 28)
-	scroll.add_child(padding)
-	var content := VBoxContainer.new()
-	content.name = "Content"
-	content.add_theme_constant_override("separation", 16)
-	padding.add_child(content)
+	var content: VBoxContainer = scroll.get_node("Padding/Content")
 	_tabs[tab.id] = content
 	_build_options(content, tab.get("options", []))
 
 func _divider() -> ColorRect:
-	var divider := ColorRect.new()
-	divider.color = Color(0.65, 0.65, 0.62)
-	divider.custom_minimum_size.y = 1
-	divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return divider
+	return _component("divider") as ColorRect
 
 func _build_options(parent: VBoxContainer, options: Array) -> void:
 	var items: Array = []
@@ -274,21 +266,6 @@ func _build_options(parent: VBoxContainer, options: Array) -> void:
 		items.append({"id": spec.id, "divider": divider})
 	_option_lists.append(items)
 
-func _label(text_value: String, font_size: int = 26) -> Label:
-	var label := Label.new()
-	label.text = text_value
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", font_size)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return label
-
-func _field(control: Control, width: float = 0) -> void:
-	control.custom_minimum_size = Vector2(width, 64)
-	control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	control.size_flags_horizontal = Control.SIZE_EXPAND_FILL if width == 0 else Control.SIZE_FILL
-	control.mouse_filter = Control.MOUSE_FILTER_PASS
-	control.add_theme_font_size_override("font_size", 26)
-
 func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 	var spec := source.duplicate(true)
 	var id: String = spec.id
@@ -297,99 +274,70 @@ func _build_option(parent: VBoxContainer, source: Dictionary) -> void:
 	_entries[id] = entry
 	var control: Control
 	var root_node: Control
-	if type == "divider":
-		control = _divider()
-	elif type == "note":
-		control = _label(str(spec.get("text", "")), int(spec.get("font_size", 23)))
-		control.custom_minimum_size.y = spec.get("height", 90)
-		(control as Label).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	elif type in ["action", "group"]:
-		var button := Button.new()
-		button.text = str(spec.get("label", id))
-		_field(button)
-		control = button
-		if type == "action": button.pressed.connect(_action.bind(id, _generation))
-		else:
-			entry.expander = button
-			button.toggle_mode = true
-			button.flat = true
-			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			button.add_theme_constant_override("h_separation", 14)
-			button.set_pressed_no_signal(spec.get("expanded", false))
-			button.toggled.connect(_expanded.bind(_generation))
+	if type in ["divider", "note", "action", "group"]:
+		control = _component(type)
+		root_node = control
+		if type == "note":
+			control.text = str(spec.get("text", ""))
+			if spec.has("font_role"): control.theme_type_variation = "PartyLabel" + str(spec.font_role)
+			if spec.has("font_size"): control.add_theme_font_size_override("font_size", spec.font_size)
+			if spec.has("height"): control.custom_minimum_size.y = spec.height
+		elif type in ["action", "group"]:
+			control.text = str(spec.get("label", id))
+			if type == "action": control.pressed.connect(_action.bind(id, _generation))
+			else:
+				entry.expander = control
+				control.set_pressed_no_signal(spec.get("expanded", false))
+				control.toggled.connect(_expanded.bind(_generation))
 	elif type in ["keybinding", "bindings_header"]:
 		root_node = _build_binding_row(parent, spec, entry)
 		control = entry.control
 	else:
-		var row := HBoxContainer.new()
-		row.custom_minimum_size.y = spec.get("row_height", 96)
-		row.add_theme_constant_override("separation", 24)
-		row.mouse_filter = Control.MOUSE_FILTER_PASS
-		root_node = row
-		var label := _label(str(spec.get("label", id)))
+		root_node = _component(type + "_row")
+		if spec.has("row_height"): root_node.custom_minimum_size.y = spec.row_height
+		var label: Label = root_node.get_node("Label")
+		label.text = str(spec.get("label", id))
 		label.name = spec.get("label_name", "Label")
-		_field(label, spec.get("label_width", 378))
-		row.add_child(label)
+		if spec.has("label_width"): label.custom_minimum_size.x = spec.label_width
+		control = root_node.get_node("Value")
 		match type:
-			"label": control = _label(str(spec.get("value", "")))
 			"select":
-				var select := OptionButton.new()
 				for item in spec.items:
-					select.add_item(str(item.label))
-					select.set_item_metadata(select.item_count - 1, item.value)
-				select.item_selected.connect(_selected.bind(id, _generation))
-				control = select
+					control.add_item(str(item.label))
+					control.set_item_metadata(control.item_count - 1, item.value)
+				control.item_selected.connect(_selected.bind(id, _generation))
 			"toggle":
-				var toggle := preload("res://settings/segmented_toggle.gd").new()
-				toggle.off_text = str(spec.get("off_text", "关"))
-				toggle.on_text = str(spec.get("on_text", "开"))
-				toggle.toggle_mode = true
-				toggle.toggled.connect(_changed.bind(id, _generation))
-				control = toggle
+				if spec.has("off_text"): control.off_text = str(spec.off_text)
+				if spec.has("on_text"): control.on_text = str(spec.on_text)
+				control.toggled.connect(_changed.bind(id, _generation))
 			"number", "slider":
-				var spin := SpinBox.new()
+				var spin: SpinBox = root_node.get_node("Number") if type == "slider" else control
 				spin.min_value = spec.get("min", 0)
 				spin.max_value = spec.get("max", 100)
 				spin.step = spec.get("step", 1)
 				spin.suffix = spec.get("suffix", "")
-				spin.select_all_on_focus = true
 				spin.get_line_edit().focus_exited.connect(spin.apply)
 				spin.value_changed.connect(_changed.bind(id, _generation))
 				entry.number = spin
-				control = spin
 				if type == "slider":
-					var slider := HSlider.new()
-					slider.min_value = spin.min_value
-					slider.max_value = spin.max_value
-					slider.step = spin.step
-					slider.scrollable = false
-					slider.value_changed.connect(_changed.bind(id, _generation))
-					control = slider
-		_field(control)
+					control.min_value = spin.min_value
+					control.max_value = spin.max_value
+					control.step = spin.step
+					control.value_changed.connect(_changed.bind(id, _generation))
+					spin.name = spec.get("number_name", "Number")
 		control.name = spec.get("control_name", "Value")
-		row.add_child(control)
-		if type == "slider":
-			_field(entry.number, 226)
-			entry.number.name = spec.get("number_name", "Number")
-			row.add_child(entry.number)
 	entry.control = control
-	if root_node == null: root_node = control
 	root_node.name = spec.get("node_name", id.validate_node_name())
 	entry.root = root_node
 	parent.add_child(root_node)
 	if type == "group" or (type == "keybinding" and spec.has("children")):
-		var margin := MarginContainer.new()
-		margin.name = spec.get("details_name", id.validate_node_name() + "Details")
-		margin.add_theme_constant_override("margin_left", 40)
-		parent.add_child(margin)
-		entry.details = margin
-		var children := VBoxContainer.new()
-		children.name = "Rows"
-		children.add_theme_constant_override("separation", 12)
-		margin.add_child(children)
-		_build_options(children, spec.get("children", []))
+		var details := _component("group_details")
+		details.name = spec.get("details_name", id.validate_node_name() + "Details")
+		parent.add_child(details)
+		entry.details = details
+		details.header_control = entry.expander
+		_build_options(details.get_node("Rows"), spec.get("children", []))
 	if type == "keybinding":
-		# Schema was validated as a whole before construction.
 		entry.value = spec.get("value", [0, 0]).duplicate(true)
 		_sync(entry)
 	elif type in ["label", "number", "slider", "toggle", "select"]:
@@ -409,15 +357,22 @@ func _refresh_visibility() -> void:
 
 	# Only separate neighboring visible rows. Notes and explicit dividers are
 	# intentional section boundaries; neither receives an extra automatic line.
+	# Inside a fold, short tree branches replace ordinary row separators. Only
+	# the closing boundary of an expanded child group keeps its long stroke.
 	for items in _option_lists:
 		var previous_row := false
+		var previous_expanded := false
 		for item in items:
 			var entry: Dictionary = _entries[item.id]
 			var showing: bool = entry.root.visible
 			var is_row: bool = entry.spec.type not in ["note", "divider"]
 			if item.divider != null:
-				item.divider.visible = showing and is_row and previous_row
-			if showing: previous_row = is_row
+				var parent: Node = entry.root.get_parent()
+				var nested := parent.name == "Rows" and parent.get_parent().has_method("closing_spine_global")
+				item.divider.visible = showing and is_row and previous_row and (not nested or previous_expanded)
+			if showing:
+				previous_row = is_row
+				previous_expanded = entry.has("details") and entry.details.visible and not entry.details.get_visible_rows().is_empty()
 
 func _input(event: InputEvent) -> void:
 	if _route_binding_input(event): return
@@ -457,10 +412,9 @@ func _binding_conflict_for(id: String, pair: Array) -> String:
 			if code != 0 and code in other.value: return other_id
 	return ""
 
-func _binding_label_width(parent: Control) -> float:
-	# Compensate group indentation in the name column only: both key columns
-	# retain the same global x position, including nested expandable items.
-	var width := 570.0
+func _binding_label_width(parent: Control, base_width: float) -> float:
+	# Only subtract actual indentation; the scene owns the base column width.
+	var width := base_width
 	var ancestor: Node = parent
 	while ancestor != null and ancestor.name != "Padding":
 		if ancestor is MarginContainer: width -= ancestor.get_theme_constant("margin_left")
@@ -468,56 +422,25 @@ func _binding_label_width(parent: Control) -> float:
 	return maxf(width, 80.0)
 
 func _build_binding_row(parent: Control, spec: Dictionary, entry: Dictionary) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.custom_minimum_size.y = 72 if spec.type == "bindings_header" else 96
-	row.add_theme_constant_override("separation", 24)
-	row.mouse_filter = Control.MOUSE_FILTER_PASS
-	var name_control: Control
-	if spec.type == "keybinding" and spec.has("children"):
-		var expand := Button.new()
-		expand.text = str(spec.get("label", spec.id))
-		expand.toggle_mode = true
-		expand.flat = true
-		expand.clip_text = true
-		expand.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		expand.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		expand.set_pressed_no_signal(spec.get("expanded", false))
-		expand.toggled.connect(_expanded.bind(_generation))
-		entry.expander = expand
-		name_control = expand
-	else:
-		name_control = _label("功能名称" if spec.type == "bindings_header" else str(spec.get("label", spec.id)))
-	if name_control is Label:
-		name_control.clip_text = true
-		name_control.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	var expandable: bool = spec.type == "keybinding" and spec.has("children")
+	var row := _component("keybinding_group" if expandable else spec.type) as HBoxContainer
+	var name_control: Control = row.get_node("Function")
+	name_control.text = "功能名称" if spec.type == "bindings_header" else str(spec.get("label", spec.id))
 	name_control.tooltip_text = str(spec.get("label", "功能名称"))
-	_field(name_control, _binding_label_width(parent))
-	name_control.name = "Function"
-	row.add_child(name_control)
+	name_control.custom_minimum_size.x = _binding_label_width(parent, name_control.custom_minimum_size.x)
+	if expandable:
+		name_control.set_pressed_no_signal(spec.get("expanded", false))
+		name_control.toggled.connect(_expanded.bind(_generation))
+		entry.expander = name_control
 	entry.bindings = []
-	for slot in range(2):
-		var field: Control
-		if spec.type == "bindings_header":
-			var heading := _label("主按键" if slot == 0 else "次要按键", 24)
-			heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			heading.clip_text = true
-			field = heading
-		else:
-			var button := Button.new()
-			button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			button.clip_text = true
+	if spec.type == "keybinding":
+		for slot in range(2):
+			var button: Button = row.get_node("Primary" if slot == 0 else "Secondary")
 			var generation := _generation
 			button.pressed.connect(func():
 				if generation == _generation: begin_binding_capture(spec.id, slot)
 			)
 			entry.bindings.append(button)
-			field = button
-		_field(field)
-		field.custom_minimum_size.x = 64
-		# Ignore text minimum so changing a long shortcut never shifts columns.
-		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		field.name = "Primary" if slot == 0 else "Secondary"
-		row.add_child(field)
 	entry.control = entry.bindings[0] if spec.type == "keybinding" else name_control
 	return row
 
@@ -546,47 +469,13 @@ func begin_binding_capture(id: String, slot: int) -> bool:
 	_capture_id = id
 	_capture_slot = slot
 	_capture_return_focus = button
-	var overlay := Control.new()
-	overlay.name = "BindingCapture"
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.z_index = 30
+	var overlay := _component("binding_capture")
 	add_child(overlay)
 	_capture_overlay = overlay
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.32)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.add_child(shade)
-	var panel := PanelContainer.new()
-	panel.position = Vector2(470, 330)
-	panel.size = Vector2(980, 380)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.965, 0.965, 0.945)
-	style.set_border_width_all(2)
-	style.border_color = Color(0.25, 0.25, 0.24)
-	style.set_content_margin_all(32)
-	panel.add_theme_stylebox_override("panel", style)
-	overlay.add_child(panel)
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 24)
-	panel.add_child(content)
-	var title := _label(str(_entries[id].spec.get("label", id)) + (" · 主按键" if slot == 0 else " · 次要按键"), 30)
-	content.add_child(title)
-	_capture_message = _label("按下新按键，可组合 Ctrl / Alt / Shift / Meta\nEsc 取消 · Delete / Backspace 清除", 24)
-	_capture_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_capture_message.custom_minimum_size = Vector2(880, 124)
-	content.add_child(_capture_message)
-	var actions := HBoxContainer.new()
-	actions.add_theme_constant_override("separation", 24)
-	content.add_child(actions)
-	for label_text in ["清除绑定", "取消"]:
-		var action := Button.new()
-		action.text = label_text
-		_field(action)
-		actions.add_child(action)
-		if label_text == "取消": action.pressed.connect(cancel_binding_capture)
-		else: action.pressed.connect(func(): _commit_binding(0))
+	overlay.get_node("Panel/Content/Title").text = str(_entries[id].spec.get("label", id)) + (" · 主按键" if slot == 0 else " · 次要按键")
+	_capture_message = overlay.get_node("Panel/Content/Message")
+	overlay.get_node("Panel/Content/Actions/Cancel").pressed.connect(cancel_binding_capture)
+	overlay.get_node("Panel/Content/Actions/Clear").pressed.connect(func(): _commit_binding(0))
 	button.release_focus()
 	set_process(true)
 	return true

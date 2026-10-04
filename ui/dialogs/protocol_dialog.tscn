@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/primary.tres" id="primary"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
+
+[node name="Protocol" type="Control"]
+theme = ExtResource("theme")
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Dialog" type="Panel" parent="."]
+offset_left = 540.0
+offset_top = 270.0
+offset_right = 1380.0
+offset_bottom = 810.0
+theme_override_styles/panel = ExtResource("card")
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="."]
+theme_type_variation = "PartyLabelDialogTitle"
+offset_left = 600.0
+offset_top = 312.0
+offset_right = 1320.0
+offset_bottom = 372.0
+text = "玩法协议"
+
+[node name="Note" type="Label" parent="."]
+theme_type_variation = "PartyLabelSecondary"
+offset_left = 600.0
+offset_top = 388.0
+offset_right = 1320.0
+offset_bottom = 430.0
+text = "选择界面演示；未接入真实玩法协议"
+
+[node name="Option0" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
+offset_left = 600.0
+offset_top = 458.0
+offset_right = 1320.0
+offset_bottom = 530.0
+text = "派对示例 A"
+
+[node name="Option1" type="Button" parent="."]
+theme_type_variation = "PartyButtonAction"
+offset_left = 600.0
+offset_top = 548.0
+offset_right = 1320.0
+offset_bottom = 620.0
+text = "派对示例 B"
+
+[node name="Selected" type="Label" parent="."]
+theme_type_variation = "PartyLabelBody"
+offset_left = 600.0
+offset_top = 638.0
+offset_right = 1320.0
+offset_bottom = 678.0
+text = "当前选择：派对示例 A"
+
+[node name="Close" type="Button" parent="."]
+theme_type_variation = "PartyButtonActionPrimary"
+offset_left = 1000.0
+offset_top = 700.0
+offset_right = 1320.0
+offset_bottom = 772.0
+text = "完成"

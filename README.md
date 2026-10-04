@@ -1,14 +1,20 @@
 # GODOT PARTY · 主界面交互原型
 
-原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。灰阶线框风格，全部界面均使用原生 Control 节点；通用设置页按输入数据动态生成，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
+原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。灰阶线框风格，全部界面均使用原生 Control 节点；通用设置页按输入数据实例化可编辑组件场景，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
 
 ## 打开与运行
 
 1. 使用 Godot 4.7.2，导入 `project.godot` 并等待字体导入
 2. 按 F6 运行主场景，或 F5 运行项目
-3. 在 `main.tscn` 的 2D 编辑器直接调整主菜单 / 房间；设置内容通过 `settings/main_settings_schema.json` 与 `main.gd` 的业务回调生成
+3. 在 `main.tscn` 的 2D 编辑器直接调整主菜单 / 房间；设置布局在 `settings/components/*.tscn` 中编辑，内容通过 `settings/main_settings_schema.json` 与 `main.gd` 绑定
 
 初始窗口 1280×720，原生设计视口 **1920×1080**，统一缩放保持 16:9。无需插件、账号或网络。
+
+## 统一配色与字体
+
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
+
+普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
 
 ## 通用设置页（本轮新增）
 
@@ -16,7 +22,7 @@
 - 根据输入生成页签、静态选项、下拉选项框、左右选项开关（点击切换与滑动动画）、数值框、数值滑条（含精确输入）、分隔线、说明、动作按钮、条件折叠分组和双槽位按键绑定
 - 通过稳定 ID 调用 `configure` / `add_tab` / `add_option` / `get_value` / `get_values` / `set_value` / `clear`，无需硬编码节点路径
 - 修改值调用传入的 `Callable(value, id)`；动作按钮调用 `Callable(id)`。初始化、滑块与数值框同步、静默回填不会重复应用；可选统一 `setting_changed(id, value)` 信号
-- 按键绑定由代码生成「功能名称 / 主按键 / 次要按键」三列，支持展开分组和功能行子操作、自然滚动、组合键、清空 / 取消和同范围冲突检查。Esc 取消录入，Delete / Backspace 清空，单独修饰键不提交；录入时消费快捷键，不触发背景返回或截图
+- 按键绑定由组件场景组成「功能名称 / 主按键 / 次要按键」三列，支持展开分组和功能行子操作、自然滚动、组合键、清空 / 取消和同范围冲突检查。Esc 取消录入，Delete / Backspace 清空，单独修饰键不提交；录入时消费快捷键，不触发背景返回或截图
 - 绑定值为 `[KEY_W, KEY_UP]` 等整数双槽数组（`0` 为空）；业务 `Callable(value, id)` 应用到 InputMap，组件本身不修改 InputMap。主界面与独立示例只修改 `party_demo_*` 动作，不覆盖 `ui_*`；F10 示例底部显示实际动作触发
 - 主菜单设置页已经实际使用这套 API；显示模式和应用窗口分辨率通过传入回调接入，语音与 UI 音效仍是原型状态
 - 完整中文文档和可复制接入代码：[`docs/SETTINGS_API.zh-CN.md`](docs/SETTINGS_API.zh-CN.md)
@@ -55,7 +61,7 @@
 - 按键绑定：第四个页签由 `settings/demo_bindings.gd` 生成，移动 / 交互组可折叠，跳跃行可展开空中冲刺子绑定。更改真实应用到演示 InputMap 动作；默认配置静默初始化后由调用方显式应用，不计入回调次数
 - 选择窗口化后，点击小箭头展开 / 收起缩进的二级选项；分辨率宽度 640–7680 px、高度 360–4320 px。先编辑，再按“应用分辨率”调整真实窗口；切换其他显示模式时隐藏窗口子项
 - 所有设置数值均为原生 SpinBox，支持选中文字并精确输入、Enter / 移开焦点提交、四舍五入与合法范围限制。音量为 0–100%、步长 / 精度 1%；宽高步长 / 精度 1 px，例如 80.6 → 81、1280.6 → 1281。滑块和数值框双向同步
-- 设置项使用 VBoxContainer / HBoxContainer 的统一行高和垂直居中布局；名称、下拉框、滑块和数值框中线一致，二级分辨率字段沿用相同规则；每行 / 组之间有 1 px 细分隔线
+- 设置项使用 VBoxContainer / HBoxContainer 的统一行高和垂直居中布局；名称、下拉框、滑块和数值框中线一致，二级分辨率字段沿用相同规则；顶层行 / 组之间有 1 px 细分隔线，折叠内普通子项仅保留层级短支线
 - 鼠标位于数值框或滑块上时，滚轮优先滚动设置内容，不修改数值；展开的下拉菜单仍使用自己的滚轮行为。仅内容实际溢出时显示滚动条，不用空白占位强制滚动
 - 本轮保留原有房间设计，不继续扩展大厅设置；后续大厅设置由主游戏自行设计
 - 退出 → 二次确认 → 取消或真正关闭应用
@@ -109,7 +115,10 @@
 ## 文件与验证
 
 - `project.godot`：4.7 项目配置
-- `main.tscn`：原生场景树、主题、几何尺寸
+- `main.tscn`：组装主页面、弹层、设置页与固定状态区
+- `ui/home_page.tscn`、`ui/rooms_page.tscn`、`ui/lobby_page.tscn`：独立可编辑的主菜单、房间列表与大厅
+- `ui/modal_layer.tscn`、`ui/dialogs/`：弹层遮罩与各个独立弹窗；`ui/theme/` 保存共享主题与样式
+- `settings/components/`：所有设置行、展开层级线、捕获弹层、开关与 tooltip 的原生组件场景；详细编辑规则见 API 文档末尾
 - `main.gd`：页面、玩法协议选择、设置、退出、截图逻辑
 - `settings/demo_bindings.gd`：程序化按键示例数据与应用层 InputMap 回调；主场景和独立示例共享
 - `assets/`：中文字体、Godot 官方图标及许可说明
@@ -124,11 +133,18 @@ godot --headless --path . --script res://tests/test_settings_demo.gd
 godot --headless --path . --script res://tests/test_settings_api_review.gd
 godot --headless --path . --script res://tests/test_segmented_toggle.gd
 godot --headless --path . --script res://tests/test_settings_dividers.gd
+godot --headless --path . --script res://tests/test_settings_connected_dividers.gd
 godot --headless --path . --script res://tests/test_room_profile.gd
 godot --headless --path . --script res://tests/test_keybindings.gd
+godot --headless --path . --script res://tests/test_scene_components.gd
+godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+统一视觉配置专项 **1361 项**：全局字体、全部 RGBA 与字号层级、旧/新实例和动态 schema、所有背景/遮罩、native 控件状态、下拉箭头及菜单 radio/check 图标像素与未选态透明度、tooltip、开关动画、局部 override、Theme/StyleBox/PackedScene 保存重载与连接清理。连同既有 1796 项，共 **3157 项通过**，另通过空缓存首次 import、普通 import、真实退出信号和主界面/独立示例 headless smoke。
+
+新增场景组件测试 **54 项**：全部组件独立实例化、各 schema 类型、场景尺寸保留、嵌套层级线伸缩和折叠、居中 tooltip、捕获层信号、页签悬停边距。连同既有 476 项，共 **530 项通过**，另通过独立退出确认测试。主页面与弹窗分拆保持业务控件路径、几何与样式不变；每个弹窗自带可编辑的 Dialog 背景，打开弹窗不覆盖面板尺寸。
 
 新增按键绑定专项测试 **86 项**：双槽生成、组合键与保留键、静默和一次回调、重复 / 冲突原子拒绝、主 / 次列跨层级对齐、捕获取消 / 清空 / 失焦 / 离页、F10 / F12 不穿透、折叠与滚动、真实 InputMap 双事件及回调中重建。连同原有 390 项，共 **476 项通过**，另通过独立退出确认测试。
 
@@ -139,3 +155,11 @@ godot --path . --resolution 1920x1080 -- --capture-all
 原 Godot 4.7.2 headless 导航与数值测试 150 项、设置布局和滚动测试 58 项，共 208 项通过：8 个纵向玩家位、8 人容量、房主 / 玩家权限、准备 / 取消准备、游戏 / 地图 / 回合切换、高级设置、预设模拟应用和导出预览，以及全画幅背景层级、精确尺寸与按钮顺序、官方图标加载、实际引擎 / 场景 / MOCK 协议状态联动、旧边角信息移除、大厅操作区不遮挡、主界面无玩家卡片、进入房间才显示预备区、协议切换 / 重开 / 关闭、创建 / 加入 / 离开、创建弹窗的选择 / 取消 / Esc / 重开 / 确认传值、独立设置页默认语音与三个页签、设备默认选项、输入数值保留、输入和 UI 音量不改 Master、麦克风采集禁用、多次设置返回、弹层焦点隔离、满员禁用和退出取消。额外覆盖数值键盘输入的四舍五入、上下界限制、无效文本、滑块同步、显示模式、二级选项显隐、显式分辨率应用与 12 项限高下拉菜单、实际内容溢出与打开 / 选择 / Esc 收起流程。单独退出测试触发真实关闭信号。真实渲染截图需要显示服务器；headless 测试不代表视觉检查。F12 保存 1920×1080 原生视口，与当前窗口缩放无关。
 
 设置滚动回归：展开 UI 子项时内容自然高度 861 px、视口 736 px，滚动范围 125 px；检查所有行中心 y 坐标一致、横向无裁切、滚轮经过数值框不改值、内容确实移动、三个固定区域不移动、滚到底可完整阅读尾部说明。另将页签高度临时减到 520 px 验证更小视口的滚动与末尾可达；测试后不改变正式布局。语音与关于内容较少，不强制制造溢出。
+
+### 折叠层级连接线
+
+统一用于普通 group、功能行子操作及条件 UI：展开箭头中心沿同一 x 垂直向下接本层竖线（无斜接），每个可见子项（含说明）在行中心从竖线接一段短横线到内容左边缘。同一折叠内普通子项之间不画自动长分隔线，与按键绑定一致；顶层分隔、展开子组收尾边界与显式 divider 保留。收尾横线从紧邻展开区的最深末级竖线开始，删去向左穿过外层缩进的多余段；顶层折叠后恢复普通行分隔。末尾嵌套竖线仍共享祖先收尾高度。
+
+`group_details.tscn` 的 `HierarchyLine`、`BranchTemplate` 与缩进/行间距可在编辑器调整；分支通过场景模板生成。`divider.tscn` 的根节点保留布局和 API，`Stroke` 绘制裁短后的横线，不挪动任何交互区域。空子组不显示竖线；条件隐藏、动态插入、滚动与缩放都会按实际 Control 几何重新连接。几何测试不替代真实截图验收。
+
+本次直线与折叠分隔修正后（含真实窗口化示例、按钮解析后样式边距），几何专项 **1253 项**、默认分隔专项 **40 项**通过，覆盖各层首末子项、说明、展开/折叠、条件隐藏、空组、运行时插入/重建、场景线条编辑、非均匀缩放与实际滚动；连同其余 503 项，共 **1796 项通过**，另通过 import、真实退出信号与主界面/独立示例 headless smoke。

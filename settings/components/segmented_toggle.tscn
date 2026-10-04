@@ -1,0 +1,63 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="shared_theme"]
+
+[ext_resource type="Script" path="res://ui/theme/theme_color_rect.gd" id="color_binding"]
+
+[ext_resource type="Script" path="res://settings/segmented_toggle.gd" id="script"]
+[ext_resource type="StyleBox" path="res://ui/theme/toggle_track.tres" id="track"]
+
+[sub_resource type="StyleBoxEmpty" id="empty"]
+
+[node name="Toggle" type="Button"]
+theme = ExtResource("shared_theme")
+theme_type_variation = "PartyButtonSetting"
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 1
+toggle_mode = true
+script = ExtResource("script")
+theme_override_styles/normal = SubResource("empty")
+theme_override_styles/hover = SubResource("empty")
+theme_override_styles/pressed = SubResource("empty")
+theme_override_styles/hover_pressed = SubResource("empty")
+theme_override_styles/disabled = SubResource("empty")
+theme_override_styles/focus = SubResource("empty")
+
+[node name="Track" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("track")
+
+[node name="Selection" type="ColorRect" parent="."]
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_bottom = -4.0
+mouse_filter = 2
+
+script = ExtResource("color_binding")
+color_role = "primary"
+
+[node name="Off" type="Label" parent="."]
+theme_type_variation = "PartyLabelSettingOnPrimary"
+anchor_right = 0.5
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "关"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="On" type="Label" parent="."]
+theme_type_variation = "PartyLabelSetting"
+anchor_left = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "开"
+horizontal_alignment = 1
+vertical_alignment = 1

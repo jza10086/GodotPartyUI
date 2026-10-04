@@ -44,9 +44,9 @@ func run() -> void:
 	check(ui.get_node("Modal/Create/Password").get_theme_color("font_placeholder_color").r < 0.5, "Password placeholder readable")
 	check(ui.get_node("Modal/Direct/Address").get_theme_color("font_placeholder_color").r < 0.5, "IP placeholder readable")
 	check(ui.get_node("Modal/Create/Visibility").item_count == 3, "All visibility choices")
-	check(ui.get_node("Modal/Dialog").get_global_rect() == Rect2(520,176,880,684), "Create expanded panel geometry")
+	check(ui.get_node("Modal/Create/Dialog").get_global_rect() == Rect2(520,176,880,684), "Create expanded panel geometry")
 	for field in ["Game", "RoomName", "Password", "Visibility", "Confirm", "Cancel"]:
-		check(ui.get_node("Modal/Dialog").get_global_rect().encloses(ui.get_node("Modal/Create/" + field).get_global_rect()), "Create control contained: " + field)
+		check(ui.get_node("Modal/Create/Dialog").get_global_rect().encloses(ui.get_node("Modal/Create/" + field).get_global_rect()), "Create control contained: " + field)
 	ui.get_node("Modal/Create/RoomName").text = " "
 	press("Modal/Create/Confirm")
 	check(ui.modal_kind == "Create" and ui.page == "Home", "Blank room rejected")
