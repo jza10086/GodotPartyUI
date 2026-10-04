@@ -5,12 +5,15 @@ extends Resource
 ## Geometry stays in scenes. Every Color includes an independently editable alpha.
 
 @export_group("Typography")
-@export var font: Font = preload("res://assets/NotoSansSC-UI.otf"):
+@export var font: Font = preload("res://assets/NotoSansSC-UI.otf"): 
 	set(value):
 		if font != null and font.changed.is_connected(emit_changed): font.changed.disconnect(emit_changed)
 		font = value
 		if font != null and not font.changed.is_connected(emit_changed): font.changed.connect(emit_changed)
 		emit_changed()
+		
+## 微观大小（没有注释，我不知道micro_size改的是什么的size）
+## 这是一段micro_size的注释
 @export_range(8, 160, 1) var micro_size := 18:
 	set(value):
 		micro_size = value
