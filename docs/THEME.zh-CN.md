@@ -2,16 +2,24 @@
 
 ## 一个入口
 
-在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，直接在 Inspector 编辑并保存。所有颜色均为完整 RGBA，包含透明度；`Font` 接收 Godot `Font` 资源，可替换成自己的字体。默认使用项目内 Noto Sans CJK SC。
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，直接在 Inspector 编辑并保存。**全部 56 个设置项及六个分组均显示中文**，将鼠标停在属性名上可阅读中文说明：用途、当前影响的控件，以及对应的英文脚本字段。每个颜色都保留完整 RGBA 编辑；A（alpha）为透明度，0 完全透明、1 不透明。
 
-- **Typography**：一套字体，保留已有字号层级。常用项是 `Body Size`（正文 24）、`Setting Size`（设置行 26）、`Action Size`（按钮/页签 28）、`Section Size`（分区标题 30）、`Dialog Title Size`（弹窗标题 42）、`Display Size`（展示/大厅标题 48）、`Page Title Size`（列表标题 58）、`Brand Size`（品牌标题 72）。Micro、Debug、Meta、Detail、Note、Secondary、Player、Subheading、Compact Title 保留现有辅助文字和窄弹窗尺寸
-- **Text and states**：正文、hover、disabled、深色底文字、错误，以及示例成功/关闭/输入反馈色
-- **Surfaces and controls**：卡片/弹窗/输入框、弱化表面、主按钮、hover 背景、边框、焦点、分隔/层级线、文本选区、开关边框/选中文字
-- **Pages and overlays**：设置页整屏底色、主菜单底板、房间列表底板、大厅底板、右下角信息块、普通弹层遮罩、按键录入遮罩、F1 标尺
-- **Display placeholder background**：主界面全屏展示区的天空底色，远/近景左右色块、地面、地平线，以及占位标题和说明文字
-- **Animation**：开关禁用态透明度乘数。不会抹掉颜色本身的 alpha
+- **字体与字号**：`界面字体` 接收 Godot `Font` 资源，默认使用项目内 Noto Sans CJK SC。17 个字号层级各自独立，单位为像素，范围 8～160；例如 `微型提示字号`（18）实际控制主页右上角“编辑玩家资料”，`调试信息字号`（19）控制右下角引擎/协议/场景信息，`设置项字号`（26）控制设置行及输入控件，`操作与页签字号`（28）控制主菜单按钮/页签，`品牌标题字号`（72）控制主菜单品牌标题。其余层级可悬停查看各自用途
+- **文字与状态**：普通、悬停、禁用、深色底文字，错误提示及独立示例的启用/关闭/按键反馈色
+- **表面与控件**：普通/弱化表面、主色背景、悬停表面、普通/悬停边框、焦点强调、分隔与层级线、文本选区、左右开关边框及选中文字
+- **页面与遮罩**：设置页整屏背景、主菜单/列表/大厅/状态区底板、普通弹窗与按键录入遮罩，以及 F1 布局标尺
+- **展示占位背景**：主界面全屏展示区的天空、远/近景色块、地面、地平线、标题与说明文字
+- **开关禁用效果**：`开关禁用透明度` 是左右开关两侧文字原 alpha 的乘数，范围 0～1；不会抹掉颜色自身的透明度
 
-下拉按钮箭头跟随各交互态文字色；PopupMenu 的 radio/check/子菜单图标保留原生尺寸和透明轮廓，使用 Text / Text Disabled 配色。
+下拉按钮箭头跟随各交互态文字色；PopupMenu 的 radio/check/子菜单图标保留原生尺寸和透明轮廓，使用 `普通文字颜色` / `禁用文字颜色`。
+
+### 中文显示与旧配置兼容
+
+中文字段是资源脚本自带的原生 Inspector 编辑入口，无需安装或启用编辑器插件。注释使用 GDScript `##` 文档格式，可在 Inspector 悬停查看，也保留在 `ui_config.gd` 源码中。`micro_size` 的示例注释已完善为实际说明：主页“编辑玩家资料”提示文字、未设置本地覆盖的 Micro 文字、默认 18 像素及 8～160 的可设范围，并提醒增大字号后检查裁切；中文属性使用相同说明。
+
+已有英文 API 和 `.tres` 保存键保持不变：例如 Inspector 的 `微型提示字号` 读写 `micro_size`，`普通文字颜色` 读写 `text`。英文属性使用 `@export_storage` 继续保存旧配置值，中文代理只带 `PROPERTY_USAGE_EDITOR`，不会保存第二份冲突值。直接查看 `.tres` 时仍看到英文键属于正常行为；旧配置无需迁移，也无需修改使用 `config.micro_size` 等 API 的脚本。
+
+中文入口保留原生 Font 选择器、带 alpha 的颜色选择器、数值范围、还原默认值与撤销/重做。修改中文入口会调用原字段 setter，只发出一次 `changed` 通知。新增字段或调整默认值时，应同步维护英文存储字段及中文代理的默认值，并运行下面的 Inspector 专项回归，避免还原按钮出现偏差。
 
 主菜单、列表、大厅、全部弹窗、动态 schema 设置页、独立示例、tooltip、下拉菜单、按键录入层、层级连接线和开关动画使用这一个资源。Godot 品牌图标保留原始配色。
 
@@ -46,6 +54,7 @@ Theme 中已有的字号变体遵循 `Party` + 原生控件类型 + 字号层级
 ```sh
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_theme_configuration.gd
+godot --headless --path . --script res://tests/test_config_inspector.gd
 ```
 
-专项测试覆盖全局 RGBA/字体/字号修改，既有和新建场景、动态 schema、tooltip、弹窗/遮罩/展示背景、交互态、开关动画，以及局部覆盖和恢复全局。测试在内存中改配置并恢复，不写入正式主题。headless 检查不等同于真实视觉验收。
+专项测试覆盖全局 RGBA/字体/字号修改，既有和新建场景、动态 schema、tooltip、弹窗/遮罩/展示背景、交互态、开关动画，以及局部覆盖和恢复全局。测试在内存中改配置并恢复，不写入正式主题。Inspector 专项另检查全部 56 项中文名称/说明/类型/范围/默认值、英文 API 双向同步、单次通知、UndoRedo、Font 连接、深复制，以及所有旧英文键自定义值的读取、中文编辑、保存和重载；临时 `.tres` 仅写入 `user://` 并清理。headless 检查不等同于真实 Inspector 悬停和视觉验收。

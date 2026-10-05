@@ -12,7 +12,7 @@
 
 ## 统一配色与字体
 
-在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。全部 56 个设置项及六个分组已中文化，悬停属性名可看中文用途说明；英文脚本 API 和旧 `.tres` 配置值保持兼容。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
 
 普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
 
@@ -138,9 +138,12 @@ godot --headless --path . --script res://tests/test_room_profile.gd
 godot --headless --path . --script res://tests/test_keybindings.gd
 godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_theme_configuration.gd
+godot --headless --path . --script res://tests/test_config_inspector.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+中文 Inspector 专项 **1452 项**：56 个中文字段及说明、原生类型/范围/默认还原值、英文 API 双向同步、单次通知、UndoRedo、字体连接、资源深复制、旧英文键自定义值的读取及中文编辑后保存重载。连同既有 3157 项，共 **4609 项通过**；另验证 Godot 原生文档导出的全部中文属性说明。
 
 统一视觉配置专项 **1361 项**：全局字体、全部 RGBA 与字号层级、旧/新实例和动态 schema、所有背景/遮罩、native 控件状态、下拉箭头及菜单 radio/check 图标像素与未选态透明度、tooltip、开关动画、局部 override、Theme/StyleBox/PackedScene 保存重载与连接清理。连同既有 1796 项，共 **3157 项通过**，另通过空缓存首次 import、普通 import、真实退出信号和主界面/独立示例 headless smoke。
 
