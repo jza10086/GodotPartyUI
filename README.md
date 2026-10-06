@@ -139,9 +139,12 @@ godot --headless --path . --script res://tests/test_keybindings.gd
 godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
+godot --headless --path . --script res://tests/test_hover_states.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
 
 中文 Inspector 专项 **1452 项**：56 个中文字段及说明、原生类型/范围/默认还原值、英文 API 双向同步、单次通知、UndoRedo、字体连接、资源深复制、旧英文键自定义值的读取及中文编辑后保存重载。连同既有 3157 项，共 **4609 项通过**；另验证 Godot 原生文档导出的全部中文属性说明。
 

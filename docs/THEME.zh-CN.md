@@ -13,6 +13,13 @@
 
 下拉按钮箭头跟随各交互态文字色；PopupMenu 的 radio/check/子菜单图标保留原生尺寸和透明轮廓，使用 `普通文字颜色` / `禁用文字颜色`。
 
+### 悬停、选中与键盘焦点
+
+- **原生 CheckButton / CheckBox**（例如大厅高级设置）：开/关只改变原生选中指示；鼠标离开后，两种值都恢复普通背景、边框和文字。`pressed` 使用普通样式，`hover_pressed` 与 `hover` 使用相同悬停样式，因此切换值不会让整行持续高亮，也不会吞掉悬停效果
+- **OptionButton 下拉触发器**：正常状态使用普通表面；悬停和展开按下态使用统一的悬停表面、边框、文字及箭头颜色。PopupMenu 菜单项沿用相同悬停表面与文字颜色；滑过菜单项不会改变已选值，确认选项后才提交
+- 键盘焦点保留独立焦点边框，禁用控件使用弱化表面和禁用文字；这些状态不依赖开关值。原生 `Theme Overrides` 仍然优先，可分别覆盖 `normal` / `pressed` / `hover` / `hover_pressed` / `disabled` / `focus`
+- 左右分段开关仍由 `Selection` 的滑动位置表示当前值，不改变它的动画、标签配色及本地覆盖规则
+
 ### 中文显示与旧配置兼容
 
 中文字段是资源脚本自带的原生 Inspector 编辑入口，无需安装或启用编辑器插件。注释使用 GDScript `##` 文档格式，可在 Inspector 悬停查看，也保留在 `ui_config.gd` 源码中。`micro_size` 的示例注释已完善为实际说明：主页“编辑玩家资料”提示文字、未设置本地覆盖的 Micro 文字、默认 18 像素及 8～160 的可设范围，并提醒增大字号后检查裁切；中文属性使用相同说明。
@@ -55,6 +62,7 @@ Theme 中已有的字号变体遵循 `Party` + 原生控件类型 + 字号层级
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
+godot --headless --path . --script res://tests/test_hover_states.gd
 ```
 
 专项测试覆盖全局 RGBA/字体/字号修改，既有和新建场景、动态 schema、tooltip、弹窗/遮罩/展示背景、交互态、开关动画，以及局部覆盖和恢复全局。测试在内存中改配置并恢复，不写入正式主题。Inspector 专项另检查全部 56 项中文名称/说明/类型/范围/默认值、英文 API 双向同步、单次通知、UndoRedo、Font 连接、深复制，以及所有旧英文键自定义值的读取、中文编辑、保存和重载；临时 `.tres` 仅写入 `user://` 并清理。headless 检查不等同于真实 Inspector 悬停和视觉验收。

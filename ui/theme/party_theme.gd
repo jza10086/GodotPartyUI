@@ -128,13 +128,19 @@ func rebuild() -> void:
 		default_font_size = c.body_size
 		_dirty = true
 	for type in ["Button", "OptionButton", "CheckButton", "CheckBox", "MenuButton"]:
+		# A checked native toggle is logically pressed even after the pointer
+		# leaves. Its indicator owns the value; the row still follows hover.
+		var is_check: bool = type in ["CheckButton", "CheckBox"]
 		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
-			_put_stylebox(state, type, FOCUS if state == "focus" else (MUTED if state == "disabled" else (CARD if state == "normal" or type == "OptionButton" else HOVER)))
+			var resting: bool = state == "normal" or (is_check and state == "pressed")
+			_put_stylebox(state, type, FOCUS if state == "focus" else (MUTED if state == "disabled" else (CARD if resting else HOVER)))
 		for item in ["font_color", "font_focus_color"]: _put_color(item, type, c.text)
-		for item in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color"]: _put_color(item, type, c.text_hover)
+		for item in ["font_hover_color", "font_hover_pressed_color"]: _put_color(item, type, c.text_hover)
+		_put_color("font_pressed_color", type, c.text if is_check else c.text_hover)
 		_put_color("font_disabled_color", type, c.text_disabled)
 		for item in ["icon_normal_color", "icon_focus_color"]: _put_color(item, type, c.text)
-		for item in ["icon_hover_color", "icon_pressed_color", "icon_hover_pressed_color"]: _put_color(item, type, c.text_hover)
+		for item in ["icon_hover_color", "icon_hover_pressed_color"]: _put_color(item, type, c.text_hover)
+		_put_color("icon_pressed_color", type, c.text if is_check else c.text_hover)
 		_put_color("icon_disabled_color", type, c.text_disabled)
 	_put_constant("modulate_arrow", "OptionButton", 1)
 	_put_color("button_checked_color", "CheckButton", c.primary)
