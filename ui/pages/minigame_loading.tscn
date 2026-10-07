@@ -31,187 +31,225 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_constants/margin_left = 64
-theme_override_constants/margin_top = 28
+theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 64
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_bottom = 24
 [node name="Stack" type="VBoxContainer" parent="Padding"]
 layout_mode = 2
-theme_override_constants/separation = 18
-[node name="Scroll" type="ScrollContainer" parent="Padding/Stack"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-follow_focus = true
-[node name="Content" type="VBoxContainer" parent="Padding/Stack/Scroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 18
-[node name="Header" type="VBoxContainer" parent="Padding/Stack/Scroll/Content"]
+theme_override_constants/separation = 16
+[node name="Header" type="VBoxContainer" parent="Padding/Stack"]
 layout_mode = 2
 theme_override_constants/separation = 4
-[node name="Topline" type="HBoxContainer" parent="Padding/Stack/Scroll/Content/Header"]
+[node name="Topline" type="BoxContainer" parent="Padding/Stack/Header"]
+unique_name_in_owner = true
 layout_mode = 2
-[node name="Eyebrow" type="Label" parent="Padding/Stack/Scroll/Content/Header/Topline"]
+[node name="Eyebrow" type="Label" parent="Padding/Stack/Header/Topline"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PartyLabelMeta"
 text = "下一场小游戏  /  MINIGAME"
-[node name="Round" type="Label" parent="Padding/Stack/Scroll/Content/Header/Topline"]
+[node name="Round" type="Label" parent="Padding/Stack/Header/Topline"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"PartyLabelMeta"
 text = "第 01 回合  /  05"
-[node name="GameTitle" type="Label" parent="Padding/Stack/Scroll/Content/Header"]
+text_overrun_behavior = 3
+horizontal_alignment = 2
+[node name="GameTitle" type="Label" parent="Padding/Stack/Header"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PartyLabelDisplay"
 text = "云端跃迁"
 autowrap_mode = 3
-[node name="Subtitle" type="Label" parent="Padding/Stack/Scroll/Content/Header"]
+text_overrun_behavior = 3
+max_lines_visible = 1
+[node name="Subtitle" type="Label" parent="Padding/Stack/Header"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PartyLabelSecondary"
 text = "跳过断层，抢先抵达终点。"
 autowrap_mode = 3
-[node name="Body" type="BoxContainer" parent="Padding/Stack/Scroll/Content"]
-unique_name_in_owner = true
+text_overrun_behavior = 3
+max_lines_visible = 2
+[node name="Scroll" type="ScrollContainer" parent="Padding/Stack"]
 layout_mode = 2
-theme_override_constants/separation = 28
-[node name="Preview" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body"]
+focus_mode = 2
+accessibility_name = "玩家列表与玩法介绍，可用方向键滚动"
+size_flags_vertical = 3
+horizontal_scroll_mode = 1
+follow_focus = true
+[node name="Content" type="VBoxContainer" parent="Padding/Stack/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.6
 theme_override_constants/separation = 10
-[node name="Media" type="PanelContainer" parent="Padding/Stack/Scroll/Content/Body/Preview"]
+[node name="Body" type="HBoxContainer" parent="Padding/Stack/Scroll/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 430)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 28
+[node name="Roster" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 12
+[node name="RosterHeader" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Roster"]
+layout_mode = 2
+theme_override_constants/separation = 4
+[node name="Title" type="Label" parent="Padding/Stack/Scroll/Content/Body/Roster/RosterHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PartyLabelAction"
+text = "玩家就绪状态"
+[node name="ReadyCount" type="Label" parent="Padding/Stack/Scroll/Content/Body/Roster/RosterHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PartyLabelMeta"
+text = "已准备 0 / 0    ·    已加载 0 / 0"
+[node name="Players" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Roster"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+[node name="Player1" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 1
+[node name="Player2" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 2
+[node name="Player3" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 3
+[node name="Player4" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 4
+[node name="Player5" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 5
+[node name="Player6" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 6
+[node name="Player7" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 7
+[node name="Player8" parent="Padding/Stack/Scroll/Content/Body/Roster/Players" instance=ExtResource("player")]
+layout_mode = 2
+slot_number = 8
+[node name="Details" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+theme_override_constants/separation = 18
+[node name="Preview" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.4
+theme_override_constants/separation = 10
+[node name="Media" type="PanelContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Preview"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = ExtResource("muted")
-[node name="Image" type="TextureRect" parent="Padding/Stack/Scroll/Content/Body/Preview/Media"]
+[node name="Image" type="TextureRect" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media"]
 unique_name_in_owner = true
 layout_mode = 2
 texture = ExtResource("preview")
 expand_mode = 1
 stretch_mode = 5
-[node name="VideoFrame" type="AspectRatioContainer" parent="Padding/Stack/Scroll/Content/Body/Preview/Media"]
+[node name="VideoFrame" type="AspectRatioContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 ratio = 1.77778
 stretch_mode = 2
-[node name="Video" type="VideoStreamPlayer" parent="Padding/Stack/Scroll/Content/Body/Preview/Media/VideoFrame"]
+[node name="Video" type="VideoStreamPlayer" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media/VideoFrame"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 expand = true
 volume_db = -80.0
-[node name="Placeholder" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Preview/Media"]
+[node name="Placeholder" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 16
-[node name="Symbol" type="Label" parent="Padding/Stack/Scroll/Content/Body/Preview/Media/Placeholder"]
+[node name="Symbol" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media/Placeholder"]
 layout_mode = 2
 theme_type_variation = &"PartyLabelDisplay"
 text = "▷"
 horizontal_alignment = 1
-[node name="Title" type="Label" parent="Padding/Stack/Scroll/Content/Body/Preview/Media/Placeholder"]
+[node name="Title" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media/Placeholder"]
 layout_mode = 2
 theme_type_variation = &"PartyLabelSection"
 text = "游戏演示即将呈现"
 horizontal_alignment = 1
-[node name="Hint" type="Label" parent="Padding/Stack/Scroll/Content/Body/Preview/Media/Placeholder"]
+[node name="Hint" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Preview/Media/Placeholder"]
 layout_mode = 2
 theme_type_variation = &"PartyLabelDetail"
 text = "可接入玩法图片或静音演示视频"
 horizontal_alignment = 1
-[node name="MediaCaption" type="Label" parent="Padding/Stack/Scroll/Content/Body/Preview"]
+[node name="MediaCaption" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Preview"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PartyLabelMeta"
 text = "玩法演示 · 原创示意图"
 autowrap_mode = 3
-[node name="Info" type="PanelContainer" parent="Padding/Stack/Scroll/Content/Body"]
+[node name="Info" type="PanelContainer" parent="Padding/Stack/Scroll/Content/Body/Details"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(610, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("card")
+[node name="Padding" type="MarginContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 18
+[node name="Content" type="HBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 24
+[node name="RulesSection" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = ExtResource("card")
-[node name="Padding" type="MarginContainer" parent="Padding/Stack/Scroll/Content/Body/Info"]
-layout_mode = 2
-theme_override_constants/margin_left = 26
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 26
-theme_override_constants/margin_bottom = 22
-[node name="Content" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Info/Padding"]
-layout_mode = 2
-theme_override_constants/separation = 18
-[node name="RulesTitle" type="Label" parent="Padding/Stack/Scroll/Content/Body/Info/Padding/Content"]
+theme_override_constants/separation = 12
+[node name="RulesTitle" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content/RulesSection"]
 layout_mode = 2
 theme_type_variation = &"PartyLabelSection"
 text = "游戏规则"
-[node name="Rules" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Info/Padding/Content"]
+[node name="RulesScroll" type="ScrollContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content/RulesSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+focus_mode = 2
+accessibility_name = "游戏规则，可用方向键和翻页键滚动"
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+follow_focus = true
+[node name="Rules" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content/RulesSection/RulesScroll"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 16
-[node name="Divider" type="HSeparator" parent="Padding/Stack/Scroll/Content/Body/Info/Padding/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+[node name="Divider" type="VSeparator" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content"]
 layout_mode = 2
-[node name="ControlsTitle" type="Label" parent="Padding/Stack/Scroll/Content/Body/Info/Padding/Content"]
+[node name="ControlsSection" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+[node name="ControlsTitle" type="Label" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content/ControlsSection"]
 layout_mode = 2
 theme_type_variation = &"PartyLabelSection"
 text = "操作按键"
-[node name="Controls" type="HFlowContainer" parent="Padding/Stack/Scroll/Content/Body/Info/Padding/Content"]
+[node name="Controls" type="VBoxContainer" parent="Padding/Stack/Scroll/Content/Body/Details/Info/Padding/Content/ControlsSection"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 16
-[node name="Roster" type="VBoxContainer" parent="Padding/Stack/Scroll/Content"]
 layout_mode = 2
 theme_override_constants/separation = 12
-[node name="RosterHeader" type="HBoxContainer" parent="Padding/Stack/Scroll/Content/Roster"]
-layout_mode = 2
-[node name="Title" type="Label" parent="Padding/Stack/Scroll/Content/Roster/RosterHeader"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"PartyLabelAction"
-text = "玩家就绪状态"
-[node name="ReadyCount" type="Label" parent="Padding/Stack/Scroll/Content/Roster/RosterHeader"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"PartyLabelMeta"
-text = "已准备 0 / 0    ·    已加载 0 / 0"
-[node name="Players" type="GridContainer" parent="Padding/Stack/Scroll/Content/Roster"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
-columns = 8
-[node name="Player1" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 1
-[node name="Player2" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 2
-[node name="Player3" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 3
-[node name="Player4" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 4
-[node name="Player5" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 5
-[node name="Player6" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 6
-[node name="Player7" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 7
-[node name="Player8" parent="Padding/Stack/Scroll/Content/Roster/Players" instance=ExtResource("player")]
-layout_mode = 2
-slot_number = 8
 [node name="DemoBar" type="HFlowContainer" parent="Padding/Stack/Scroll/Content"]
 unique_name_in_owner = true
 visible = false
@@ -236,7 +274,8 @@ layout_mode = 2
 text = "重新演示"
 [node name="FooterDivider" type="HSeparator" parent="Padding/Stack"]
 layout_mode = 2
-[node name="Footer" type="HBoxContainer" parent="Padding/Stack"]
+[node name="Footer" type="BoxContainer" parent="Padding/Stack"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 26
 [node name="Back" type="Button" parent="Padding/Stack/Footer"]

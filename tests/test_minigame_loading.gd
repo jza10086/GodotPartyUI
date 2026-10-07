@@ -111,9 +111,9 @@ func run() -> void:
 	check(page.get_node("%Rules").get_child_count() == 2 and text_of(page.get_node("%Rules")).contains("规则甲"), "Rules are editable scene instances and defensively copied")
 	check(page.get_node("%Controls").get_child_count() == 2 and page.get_node("%Controls").get_child(0).function_text == "移动", "Control descriptions are defensively copied")
 	check(page.get_node("%Controls").get_child(0).get_accessible_text().contains("W") and page.get_node("%Controls").get_child(1).get_accessible_text().contains("Space"), "Control hints expose semantic key names")
-	check(page.get_node("%Players").get_child_count() == 8, "Exactly eight editable player cards exist")
+	check(page.get_node("%Players").get_child_count() == 8, "Exactly eight editable player rows exist")
 	for i in range(8):
-		check(page.get_node("%Players").get_child(i).scene_file_path.ends_with("minigame_player_card.tscn"), "Player card %d retains its reusable PackedScene" % (i + 1))
+		check(page.get_node("%Players").get_child(i).scene_file_path.ends_with("minigame_player_card.tscn"), "Player row %d retains its reusable PackedScene" % (i + 1))
 	var first: Control = page.get_node("%Players").get_child(0)
 	var second: Control = page.get_node("%Players").get_child(1)
 	check(first.get_node("%Name").text == "本机名字" and first.get_node("%LocalTag").text == "本机", "Local identity is explicitly labeled")
@@ -335,25 +335,211 @@ func test_theme(page: Control) -> void:
 	check(page.get_node("%GameTitle").get_theme_font("font") == original.font, "Original shared font restored without writing resources")
 
 func test_layout(page: Control) -> void:
-	# Standalone page dimensions deliberately exercise both layout branches, even
-	# though the application normally scales its 1920x1080 logical viewport.
+	# Exercise component dimensions, independently of the fixed logical viewport.
 	page.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	for dimensions in [Vector2(1920, 1080), Vector2(1280, 720), Vector2(1920, 1080)]:
+	page.show_demo_controls = true
+	var players: Array = []
+	for i in 8:
+		players.append({"id":"layout_%d" % i, "name":"长名字中文玩家测试%02d" % i, "state":["loading", "not_ready", "ready"][i % 3], "progress":67})
+	page.configure({"rules":["在浮空平台间移动与跳跃，避开断层。", "掉落后回到上一平台，继续向终点前进。", "率先碰到金色星标的玩家获胜。"], "controls":[{"keys":[KEY_W, KEY_A, KEY_S, KEY_D], "separator":" ", "text":"移动"}, {"binding":KEY_SPACE, "text":"跳跃"}, {"binding":KEY_E, "text":"交互"}]}, players, "layout_0")
+	var source := FileAccess.get_file_as_string(PAGE_PATH)
+	check(source.contains('name="Players" type="VBoxContainer"') and source.contains('name="Body" type="HBoxContainer"'), "Saved scene uses a permanent left list and horizontal body")
+	check(source.contains('name="RulesScroll" type="ScrollContainer"'), "Independent rule scrolling is an editable scene node")
+	for dimensions in [Vector2(1920, 1080), Vector2(1280, 720), Vector2(1000, 1080), Vector2(640, 720), Vector2(1920, 1080)]:
 		page.size = dimensions
 		await settle()
-		var narrow: bool = dimensions.x < 1350
-		check(page.get_node("%Body").vertical == narrow and page.get_node("%Players").columns == (4 if narrow else 8), "Responsive body/roster reflow at " + str(dimensions))
-		var rect := page.get_global_rect()
-		for target in ["%Ready", "%Back", "Padding/Stack/Scroll"]:
-			var control: Control = page.get_node(target)
-			check(rect.grow(1).encloses(control.get_global_rect()), "Viewport contains persistent control %s at %s" % [target, dimensions])
-		check(not page.get_node("%Ready").get_global_rect().intersects(page.get_node("%Back").get_global_rect()), "Persistent actions never overlap at " + str(dimensions))
-		var scroll: ScrollContainer = page.get_node("Padding/Stack/Scroll")
-		check(scroll.get_global_rect().end.y <= page.get_node("%Ready").global_position.y, "Scrollable content stays above persistent actions at " + str(dimensions))
-		var cards: GridContainer = page.get_node("%Players")
-		for i in range(8):
-			check(cards.get_global_rect().grow(1).encloses(cards.get_child(i).get_global_rect()), "Roster contains card %d at %s" % [i + 1, dimensions])
-		check(page.get_node("%Body").size.x <= scroll.size.x + 1, "Content remains horizontally scroll-free at " + str(dimensions))
+		await check_layout_geometry(page, "default " + str(dimensions))
+		if dimensions == Vector2(1920, 1080):
+			var scroll: ScrollContainer = page.get_node("Padding/Stack/Scroll")
+			check(scroll.get_global_rect().grow(1).encloses(page.get_node("%Players").get_global_rect()), "All eight rows are completely visible in the default design viewport")
+			check(scroll.get_v_scroll_bar().max_value <= scroll.get_v_scroll_bar().page + 1, "Default mock content fits without an unnecessary outer scrollbar")
+			var ratio: float = page.get_node("%Roster").size.x / page.get_node("%Body").size.x
+			check(ratio >= 0.23 and ratio <= 0.28, "Default left roster takes about one quarter of the content width")
+			check(page.get_node("%RulesScroll").get_v_scroll_bar().max_value <= page.get_node("%RulesScroll").get_v_scroll_bar().page + 1, "Three default rules fit at the wide design viewport")
+	await test_long_rules_layout(page)
+	await test_header_and_keyboard_layout(page)
+	await test_local_font_columns(page)
+	await test_large_font_layout(page)
+
+func check_layout_geometry(page: Control, context: String) -> void:
+	var scroll: ScrollContainer = page.get_node("Padding/Stack/Scroll")
+	scroll.scroll_horizontal = 0
+	scroll.scroll_vertical = 0
+	await settle()
+	var viewport := page.get_global_rect()
+	var roster: Control = page.get_node("%Roster")
+	var media: Control = page.get_node("%Media")
+	var info: Control = page.get_node("%Info")
+	var rows: VBoxContainer = page.get_node("%Players")
+	check(page.get_node("%Body") is HBoxContainer and rows.get_child_count() == 8, "Roster stays an eight-row list: " + context)
+	check(roster.get_global_rect().end.x < media.global_position.x and roster.get_global_rect().end.x < info.global_position.x, "Roster remains left of both media and information: " + context)
+	check(media.get_global_rect().end.y < info.global_position.y and is_equal_approx(media.global_position.x, info.global_position.x), "Right preview sits directly above rules and controls: " + context)
+	check(page.get_node("%Info").is_ancestor_of(page.get_node("%RulesScroll")) and page.get_node("%Info").is_ancestor_of(page.get_node("%Controls")), "Rules and keys share the lower-right information panel: " + context)
+	for target in ["%Ready", "%Back", "%Summary", "%Footer", "Padding/Stack/Scroll", "Padding/Stack/Header"]:
+		check(viewport.grow(1).encloses(page.get_node(target).get_global_rect()), "Page contains persistent control %s: %s" % [target, context])
+	check(scroll.get_global_rect().end.y <= page.get_node("%Footer").global_position.y, "Content cannot paint over fixed footer: " + context)
+	check(page.get_node("Padding/Stack/Header").get_global_rect().end.y <= scroll.global_position.y, "Fixed header stays above scroll region: " + context)
+	check(not page.get_node("%Ready").get_global_rect().intersects(page.get_node("%Back").get_global_rect()), "Persistent buttons never overlap: " + context)
+	check(not page.get_node("%Summary").get_global_rect().intersects(page.get_node("%Ready").get_global_rect()), "Status summary never overlaps Ready: " + context)
+	var first: Control = rows.get_child(0)
+	for i in 8:
+		var row: Control = rows.get_child(i)
+		check(rows.get_global_rect().grow(1).encloses(row.get_global_rect()) and is_equal_approx(row.position.x, first.position.x) and is_equal_approx(row.size.x, first.size.x), "Row %d occupies one aligned list row: %s" % [i + 1, context])
+		if i > 0: check(rows.get_child(i - 1).get_global_rect().end.y < row.global_position.y, "Player rows remain vertically ordered: %d / %s" % [i, context])
+		for target in ["%Name", "%State", "%LocalTag", "%AvatarText"]:
+			check(row.get_global_rect().grow(1).encloses(row.get_node(target).get_global_rect()), "Row %d contains %s without clipping: %s" % [i + 1, target, context])
+		check(not row.get_node("%Name").get_global_rect().intersects(row.get_node("%State").get_global_rect()), "Name and state do not overlap: %d / %s" % [i, context])
+		check(is_equal_approx(row.get_node("%State").global_position.x, first.get_node("%State").global_position.x), "Status columns align across all states: %d / %s" % [i, context])
+		check(row.get_node("%Name").tooltip_text == row.player_name and row.get_node("%Name").text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS, "Long name retains its full tooltip and ellipsis: %d / %s" % [i, context])
+	var footer_rect: Rect2 = page.get_node("%Footer").get_global_rect()
+	var header_rect: Rect2 = page.get_node("Padding/Stack/Header").get_global_rect()
+	scroll.scroll_vertical = 100000
+	await settle()
+	scroll.ensure_control_visible(rows.get_child(7))
+	await settle()
+	check(scroll.get_global_rect().grow(1).encloses(rows.get_child(7).get_global_rect()), "Last player is reachable through actual outer scrolling: " + context)
+	scroll.scroll_horizontal = 100000
+	scroll.scroll_vertical = 100000
+	await settle()
+	check(info.get_global_rect().end.x <= scroll.get_global_rect().end.x + 1 and info.get_global_rect().end.y <= scroll.get_global_rect().end.y + 1, "Lower-right information end remains reachable through both scroll axes: " + context)
+	check(page.get_node("%Footer").get_global_rect() == footer_rect and page.get_node("Padding/Stack/Header").get_global_rect() == header_rect, "Outer scrolling leaves header and footer fixed: " + context)
+	scroll.scroll_horizontal = 0
+	scroll.scroll_vertical = 0
+	await settle()
+
+func test_long_rules_layout(page: Control) -> void:
+	page.size = Vector2(1920, 1080)
+	await settle()
+	var rules: Array[String] = []
+	for i in 14: rules.append("规则 %02d：跳跃前观察下一平台的位置。移动到平台边缘时保持节奏，落入空隙后返回上一平台。这里用于检查长文本换行和滚动。" % (i + 1))
+	var body_size: Vector2 = page.get_node("%Body").size
+	page.configure({"rules":rules}, page.get_players(), page.get_local_player_id())
+	await settle()
+	check(page.get_node("%Body").size == body_size, "Long rules do not grow the main body or push the roster/footer away")
+	for dimensions in [Vector2(1920, 1080), Vector2(1000, 1080)]:
+		page.size = dimensions
+		await settle()
+		var scroll: ScrollContainer = page.get_node("%RulesScroll")
+		var footer_rect: Rect2 = page.get_node("%Footer").get_global_rect()
+		var controls_rect: Rect2 = page.get_node("%Controls").get_global_rect()
+		var media_rect: Rect2 = page.get_node("%Media").get_global_rect()
+		var roster_rect: Rect2 = page.get_node("%Roster").get_global_rect()
+		check(scroll.get_v_scroll_bar().max_value > scroll.get_v_scroll_bar().page, "Long rules have their own real scroll range: " + str(dimensions))
+		scroll.scroll_vertical = 100000
+		await settle()
+		var last: Control = page.get_node("%Rules").get_child(13)
+		check(last.get_global_rect().end.y <= scroll.get_global_rect().end.y + 1 and last.get_global_rect().end.y > scroll.global_position.y, "Final long rule is reachable within independent rules scroll: " + str(dimensions))
+		check(page.get_node("%Controls").get_global_rect() == controls_rect and page.get_node("%Media").get_global_rect() == media_rect and page.get_node("%Roster").get_global_rect() == roster_rect and page.get_node("%Footer").get_global_rect() == footer_rect, "Rule scrolling leaves keys, preview, players and actions in place: " + str(dimensions))
+		for row in page.get_node("%Rules").get_children():
+			check(row.size.x <= scroll.size.x + 1 and row.get_node("Text").autowrap_mode == TextServer.AUTOWRAP_WORD_SMART, "Long rule wraps within the rule viewport width: " + str(dimensions))
+		scroll.scroll_vertical = 0
+		await settle()
+
+func test_header_and_keyboard_layout(page: Control) -> void:
+	var title: String = page.game_title
+	var subtitle: String = page.game_subtitle
+	var round_label: String = page.round_text
+	page.configure({"title":"这是特别长的小游戏名称需要保持底部操作可见".repeat(10), "subtitle":"这是很长的补充说明，需要完整文本提示并限制固定区高度。".repeat(15), "round":"特别长的回合描述".repeat(20)}, page.get_players(), page.get_local_player_id())
+	for dimensions in [Vector2(640, 720), Vector2(1000, 720)]:
+		page.size = dimensions
+		await settle()
+		for path in ["%GameTitle", "%Subtitle", "%Round", "%Footer", "Padding/Stack/Scroll"]:
+			check(page.get_global_rect().grow(1).encloses(page.get_node(path).get_global_rect()), "Long fixed header preserves bounded %s at %s" % [path, dimensions])
+		check(page.get_node("Padding/Stack/Scroll").size.y >= 40, "Long title and subtitle leave a usable scroll region: " + str(dimensions))
+	check(page.get_node("%GameTitle").tooltip_text == page.game_title and page.get_node("%Subtitle").tooltip_text == page.game_subtitle and page.get_node("%Round").tooltip_text == page.round_text, "Truncated fixed-header labels retain complete tooltip text")
+	page.configure({"title":title, "subtitle":subtitle, "round":round_label}, page.get_players(), page.get_local_player_id())
+	page.size = Vector2(1920, 1080)
+	page.set_local_loaded(true)
+	await settle()
+	page.get_node("%Ready").grab_focus()
+	var tab := InputEventKey.new()
+	tab.keycode = KEY_TAB
+	tab.pressed = true
+	Input.parse_input_event(tab)
+	await settle()
+	check(root.gui_get_focus_owner() == page.get_node("Padding/Stack/Scroll"), "Tab wraps from Ready to keyboard-accessible outer content")
+	tab.pressed = false
+	Input.parse_input_event(tab)
+	tab = tab.duplicate()
+	tab.pressed = true
+	Input.parse_input_event(tab)
+	await settle()
+	check(root.gui_get_focus_owner() == page.get_node("%RulesScroll"), "Tab reaches the independently scrollable rules")
+	tab.pressed = false
+	Input.parse_input_event(tab)
+	page.get_node("%RulesScroll").scroll_vertical = 0
+	var down := InputEventKey.new()
+	down.keycode = KEY_PAGEDOWN
+	down.pressed = true
+	Input.parse_input_event(down)
+	await settle()
+	check(page.get_node("%RulesScroll").scroll_vertical > 0, "PageDown input actually scrolls later rules without a pointer")
+	down.pressed = false
+	Input.parse_input_event(down)
+	page.get_node("%RulesScroll").scroll_vertical = 0
+	page.size = Vector2(640, 720)
+	await settle()
+	var outer: ScrollContainer = page.get_node("Padding/Stack/Scroll")
+	outer.grab_focus()
+	outer.scroll_horizontal = 0
+	outer.scroll_vertical = 0
+	var footer_rect: Rect2 = page.get_node("%Footer").get_global_rect()
+	var right := InputEventKey.new()
+	right.keycode = KEY_RIGHT
+	right.pressed = true
+	Input.parse_input_event(right)
+	await settle()
+	check(outer.scroll_horizontal > 0, "Arrow-key input reaches overflow on the right without moving the roster below it")
+	right.pressed = false
+	Input.parse_input_event(right)
+	down.pressed = true
+	Input.parse_input_event(down)
+	await settle()
+	check(outer.scroll_vertical > 0 and page.get_node("%Footer").get_global_rect() == footer_rect, "Keyboard outer scrolling reaches lower content while footer stays fixed")
+	down.pressed = false
+	Input.parse_input_event(down)
+	page.get_node("%Back").grab_focus()
+	page.size = Vector2(1920, 1080)
+	await settle()
+
+func test_local_font_columns(page: Control) -> void:
+	var row: Control = page.get_node("%Players").get_child(0)
+	var state: Label = row.get_node("%State")
+	var name_label: Label = row.get_node("%Name")
+	state.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_font_size_override("font_size", 36)
+	await settle()
+	var expected: float = state.get_theme_font("font").get_string_size("◷ 加载中 · 99%", HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x
+	check(state.custom_minimum_size.x >= expected, "Live local State font override recomputes reserved status width")
+	expected = name_label.get_theme_font("font").get_string_size("玩家名称", HORIZONTAL_ALIGNMENT_LEFT, -1, 36).x
+	check(name_label.custom_minimum_size.x >= expected, "Live local Name font override preserves readable name width")
+	check(row.get_global_rect().grow(1).encloses(state.get_global_rect()) and not state.get_global_rect().intersects(name_label.get_global_rect()), "Local font overrides do not clip or overlap player columns")
+	state.remove_theme_font_size_override("font_size")
+	name_label.remove_theme_font_size_override("font_size")
+	await settle()
+	check(is_equal_approx(state.custom_minimum_size.x, page.get_node("%Players").get_child(1).get_node("%State").custom_minimum_size.x), "Removing a local font override restores shared column alignment")
+
+func test_large_font_layout(page: Control) -> void:
+	var config: Resource = load(CONFIG_PATH)
+	var sizes := {"display_size":63, "body_size":30, "micro_size":24, "detail_size":28, "action_size":34, "note_size":28, "section_size":36, "meta_size":24, "secondary_size":28}
+	var original: Dictionary = {}
+	config.set_block_signals(true)
+	for field in sizes:
+		original[field] = config.get(field)
+		config.set(field, sizes[field])
+	config.set_block_signals(false)
+	config.emit_changed()
+	for dimensions in [Vector2(1920, 1080), Vector2(1000, 1080), Vector2(640, 720)]:
+		page.size = dimensions
+		await settle()
+		await check_layout_geometry(page, "large font " + str(dimensions))
+	check(page.get_node("%Players").get_child(0).get_node("%Name").get_theme_font_size("font_size") == 28 and page.get_node("%Players").get_child(0).get_node("%State").get_theme_font_size("font_size") == 24, "Player columns inherit enlarged shared semantic fonts")
+	config.set_block_signals(true)
+	for field in original: config.set(field, original[field])
+	config.set_block_signals(false)
+	config.emit_changed()
+	page.size = Vector2(1920, 1080)
+	await settle()
 
 func test_demo_driver() -> void:
 	var page := make_page()

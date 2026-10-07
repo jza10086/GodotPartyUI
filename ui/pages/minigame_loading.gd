@@ -51,6 +51,11 @@ func _ready() -> void:
 	set_process(false)
 	visibility_changed.connect(_sync_video_playback)
 	resized.connect(_adapt_layout)
+	# A BoxContainer axis change can settle its wrapped children after the
+	# parent has sorted. Re-sort the fixed stack once the footer has settled.
+	%Footer.sort_children.connect($Padding/Stack.queue_sort.call_deferred)
+	%RulesScroll.gui_input.connect(_scroll_keyboard.bind(%RulesScroll))
+	$Padding/Stack/Scroll.gui_input.connect(_scroll_keyboard.bind($Padding/Stack/Scroll))
 	refresh_content()
 	_render_players()
 	_adapt_layout()
@@ -230,8 +235,11 @@ func _render_players() -> void:
 func refresh_content() -> void:
 	if not is_node_ready(): return
 	%GameTitle.text = game_title
+	%GameTitle.tooltip_text = game_title
 	%Subtitle.text = game_subtitle
+	%Subtitle.tooltip_text = game_subtitle
 	%Round.text = round_text
+	%Round.tooltip_text = round_text
 	%Back.text = back_text
 	%DemoBar.visible = show_demo_controls and not Engine.is_editor_hint()
 	_rebuild_rules()
@@ -291,7 +299,7 @@ func set_preview(image: Texture2D = null, video: VideoStream = null, caption := 
 	%Image.visible = video == null and image != null
 	%Video.visible = video != null
 	%Placeholder.visible = video == null and image == null
-	%MediaCaption.text = caption if not caption.is_empty() else ("玩法演示 · 视频静音播放" if video != null else ("玩法演示 · 图片" if image != null else "暂无演示资源 · 可先阅读右侧规则"))
+	%MediaCaption.text = caption if not caption.is_empty() else ("玩法演示 · 视频静音播放" if video != null else ("玩法演示 · 图片" if image != null else "暂无演示资源 · 可先阅读下方规则"))
 	%Video.volume = 0.0
 	_sync_video_playback()
 
@@ -331,10 +339,27 @@ func focus_primary() -> void:
 
 func _adapt_layout() -> void:
 	if not is_node_ready(): return
-	%Body.vertical = size.x < 1350
-	%Players.columns = 4 if size.x < 1350 else 8
-	%Media.custom_minimum_size.y = 360 if size.x < 1350 else 430
-	%Info.custom_minimum_size.x = 0 if size.x < 1350 else 610
+	# Keep the roster to the left of the preview at every size. The surrounding
+	# ScrollContainer exposes overflow instead of changing the list into a grid.
+	var compact := size.x < 1350
+	%Footer.vertical = size.x < 900
+	%Footer.add_theme_constant_override("separation", 12 if compact else 26)
+	%Topline.vertical = size.x < 800
+	$Padding.add_theme_constant_override("margin_left", 24 if compact else 64)
+	$Padding.add_theme_constant_override("margin_right", 24 if compact else 64)
+
+func _scroll_keyboard(event: InputEvent, target: ScrollContainer) -> void:
+	# Passive rule labels and player rows still need a keyboard reading path.
+	# Consume only scroll navigation while this scroll region owns focus.
+	if not target.has_focus(): return
+	if event.is_action_pressed("ui_down", true): target.scroll_vertical += 40
+	elif event.is_action_pressed("ui_up", true): target.scroll_vertical -= 40
+	elif event.is_action_pressed("ui_right", true): target.scroll_horizontal += 40
+	elif event.is_action_pressed("ui_left", true): target.scroll_horizontal -= 40
+	elif event.is_action_pressed("ui_page_down", true): target.scroll_vertical += roundi(target.size.y * 0.9)
+	elif event.is_action_pressed("ui_page_up", true): target.scroll_vertical -= roundi(target.size.y * 0.9)
+	else: return
+	target.accept_event()
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint() or not is_visible_in_tree(): return
