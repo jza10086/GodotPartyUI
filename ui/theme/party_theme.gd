@@ -1,6 +1,7 @@
 @tool
 extends Theme
 const Config = preload("res://ui/theme/ui_config.gd")
+const SwitchGraphics = preload("res://ui/theme/switch_graphics.gd")
 ## Shared defaults only: Godot's normal per-node Theme Overrides win.
 ## Generated from tokens, never traverses controls or removes local overrides.
 const CARD = preload("res://ui/theme/card.tres")
@@ -115,6 +116,17 @@ func _tinted_builtin_icon(item: String, type: String, color: Color) -> Texture2D
 	_icon_colors[key] = color
 	return _icons[key]
 
+func _switch_icon(item: String) -> Texture2D:
+	var c := configuration
+	var palette := [c.toggle_off, c.toggle_on, c.toggle_thumb, c.toggle_border, c.disabled_opacity]
+	var key := "CheckButton/" + item
+	if _icons.has(key) and _icon_colors.get(key) == palette: return _icons[key]
+	var active := item.begins_with("checked")
+	var opacity: float = c.disabled_opacity if item.contains("disabled") else 1.0
+	_icons[key] = SwitchGraphics.texture(1.0 if active else 0.0, SwitchGraphics.DESIGN_SIZE, c.toggle_off, c.toggle_on, c.toggle_thumb, c.toggle_border, opacity, item.ends_with("mirrored"))
+	_icon_colors[key] = palette
+	return _icons[key]
+
 func rebuild() -> void:
 	if configuration == null: return
 	var c := configuration
@@ -143,8 +155,12 @@ func rebuild() -> void:
 		_put_color("icon_pressed_color", type, c.text if is_check else c.text_hover)
 		_put_color("icon_disabled_color", type, c.text_disabled)
 	_put_constant("modulate_arrow", "OptionButton", 1)
-	_put_color("button_checked_color", "CheckButton", c.primary)
-	_put_color("button_unchecked_color", "CheckButton", c.border)
+	# Indicator textures contain full track/thumb RGBA. Keep native modulation
+	# neutral so a white thumb stays white through every interaction state.
+	_put_color("button_checked_color", "CheckButton", Color.WHITE)
+	_put_color("button_unchecked_color", "CheckButton", Color.WHITE)
+	for item in ["checked", "unchecked", "checked_disabled", "unchecked_disabled", "checked_mirrored", "unchecked_mirrored", "checked_disabled_mirrored", "unchecked_disabled_mirrored"]:
+		_put_icon(item, "CheckButton", _switch_icon(item))
 	for direction in ["up", "down"]:
 		_put_color(direction + "_icon_modulate", "SpinBox", c.text)
 		_put_color(direction + "_hover_icon_modulate", "SpinBox", c.text_hover)

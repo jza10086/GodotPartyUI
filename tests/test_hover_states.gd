@@ -229,7 +229,7 @@ func run() -> void:
 	await settle()
 	var shuffle: CheckButton = advanced.get_node("Shuffle")
 	check(shuffle.button_pressed and advanced.get_node("Items").button_pressed and not advanced.get_node("Teams").button_pressed, "Advanced scene preserves authored checked values")
-	check(shuffle.position == Vector2(600, 450) and shuffle.size == Vector2(720, 56), "Advanced toggle row preserves authored bounds")
+	check(shuffle.position == Vector2(600, 442) and shuffle.size == Vector2(720, 78), "Advanced toggle row preserves enlarged authored bounds")
 	for control in [shuffle, advanced.get_node("Items"), advanced.get_node("Teams"), checkbox]:
 		verify_native_theme(control, true, str(control.name))
 	await exercise_native_check(shuffle, "Advanced CheckButton")
@@ -289,13 +289,16 @@ func run() -> void:
 		control.remove_theme_stylebox_override("hover")
 		control.remove_theme_color_override("font_hover_color")
 		style(control, "hover", "hover_surface", "hover_border", str(control.name) + " restored global hover")
-	# Segmented settings toggles intentionally keep their own transparent root styles.
+	# Settings switches intentionally keep their own transparent root styles.
 	var segmented: Button = load("res://settings/components/segmented_toggle.tscn").instantiate()
 	root.add_child(segmented)
 	await settle()
 	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
-		check(segmented.has_theme_stylebox_override(state) and segmented.get_theme_stylebox(state) is StyleBoxEmpty, "Segmented toggle retains local transparent " + state + " style")
-	check(segmented.get_node("Selection").color.is_equal_approx(config.primary), "Segmented selected segment still follows shared primary")
+		check(segmented.has_theme_stylebox_override(state) and segmented.get_theme_stylebox(state) is StyleBoxEmpty, "Settings switch retains local transparent " + state + " style")
+	var pixels: Image = segmented.get_node("Track").texture.get_image()
+	var off_pixel := pixels.get_pixel(81, 31)
+	var thumb_pixel := pixels.get_pixel(31, 31)
+	check(not segmented.has_node("Selection") and pixels.get_size() == Vector2i(102, 62) and (Vector4(off_pixel.r, off_pixel.g, off_pixel.b, off_pixel.a) - Vector4(config.toggle_off.r, config.toggle_off.g, config.toggle_off.b, config.toggle_off.a)).length_squared() < 0.0001 and (Vector4(thumb_pixel.r, thumb_pixel.g, thumb_pixel.b, thumb_pixel.a) - Vector4(config.toggle_thumb.r, config.toggle_thumb.g, config.toggle_thumb.b, config.toggle_thumb.a)).length_squared() < 0.0001 and pixels.get_pixel(0, 0).a == 0, "Settings switch retains a filled capsule and independent white round thumb")
 	check(option_selections == 1 and setting_changes == 1 and setting_callbacks == 1, "Local override changes emit no extra business notifications")
 	config.set_block_signals(true)
 	for field in original: config.set(field, original[field])

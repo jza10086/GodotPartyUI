@@ -34,14 +34,19 @@ func run() -> void:
 	await settle()
 	var toggle = page.get_control("toggle")
 	check(toggle is Button and toggle.toggle_mode, "Button API remains compatible")
-	check(toggle.off_text == "关" and toggle.on_text == "开", "Both left and right captions visible")
+	check(toggle.off_text == "关" and toggle.on_text == "开", "Default Off/On caption API remains compatible")
 	check(calls == 0 and toggle._slide == 1.0, "Initial true snaps without callback or tween")
+	check(toggle.custom_minimum_size == Vector2(226, 72), "Switch reserves a larger click target")
+	check(toggle.get_node("Track") is TextureRect and not toggle.has_node("Selection"), "Switch uses one capsule texture instead of segmented rectangles")
+	check(toggle.get_node("Track").size == Vector2(102, 62), "Visible switch uses enlarged 51:31 proportions")
+	check(toggle.get_node("On").visible and not toggle.get_node("Off").visible, "Only selected caption is visible")
+	check(toggle.get_node("On").get_global_rect().end.x < toggle.get_node("Track").global_position.x, "Caption stays outside the capsule")
 	click(toggle, 0.75)
-	check(page.get_value("toggle") == false and calls == 1, "Click selected right half toggles once")
+	check(page.get_value("toggle") == false and calls == 1, "Click capsule toggles once")
 	await create_timer(0.055).timeout
-	check(toggle._slide > 0 and toggle._slide < 1, "Selection slides through intermediate positions")
+	check(toggle._slide > 0 and toggle._slide < 1, "Circular thumb slides through intermediate positions")
 	click(toggle, 0.25)
-	check(page.get_value("toggle") == true and calls == 2, "Click left half toggles too")
+	check(page.get_value("toggle") == true and calls == 2, "Click external caption toggles too")
 	for i in range(8): click(toggle, 0.5)
 	check(calls == 10 and page.get_value("toggle") == true, "Rapid clicks each apply once")
 	await create_timer(0.25).timeout
@@ -70,6 +75,7 @@ func run() -> void:
 	toggle.size.x += 200
 	await create_timer(0.25).timeout
 	check(is_equal_approx(toggle._slide, 1), "Resize during slide preserves normalized target")
+	check(toggle.get_node("Track").size == Vector2(102, 62) and toggle.get_node("Track").texture.get_size() == Vector2(102, 62), "Wider setting row cannot stretch capsule or thumb")
 	page.set_value("toggle", false)
 	var old = toggle
 	check(page.add_tab("extra", "Extra"), "Rebuild during animation succeeds")
@@ -82,7 +88,9 @@ func run() -> void:
 	schema[0].options[0].on_text = "On"
 	page.configure(schema)
 	toggle = page.get_control("toggle")
-	check(toggle.off_text == "Off" and toggle.on_text == "On", "Optional segment captions are supported")
+	check(toggle.off_text == "Off" and toggle.on_text == "On", "Optional external switch captions are supported")
+	await settle()
+	check(toggle.get_node("On").text == "On" and toggle.get_node("On").visible and not toggle.get_node("Off").visible, "Custom caption is rendered only outside the selected switch")
 	page.set_value("toggle", false)
 	page.clear()
 	await settle()

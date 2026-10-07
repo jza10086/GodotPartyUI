@@ -2,7 +2,7 @@
 
 `settings/settings_page.tscn` 是可独立实例化的设置页，脚本为 `settings/settings_page.gd`。调用方用数据声明页签、设置项、分组和回调，不需要修改组件内部的场景树。组件负责原生 Godot 控件、数值编辑、分组和设置值；具体游戏逻辑由调用方接入。
 
-本工程使用 Godot 4.7.2。设置页沿用 1920×1080 设计视口和当前灰阶主题，每个页签具有自己的滚动区域。场景自带返回按钮，点击时发送 `back_requested`；页面跳转、Esc 返回和窗口尺寸适配由宿主场景负责。
+本工程使用 Godot 4.7.2。设置页沿用 1920×1080 设计视口和当前 Godot 蓝色系主题，每个页签具有自己的滚动区域。场景自带返回按钮，点击时发送 `back_requested`；页面跳转、Esc 返回和窗口尺寸适配由宿主场景负责。
 
 ## 1. 直接运行示例
 
@@ -191,7 +191,7 @@ if not settings.add_option("display", {
 | --- | --- | --- |
 | `label` | 左侧名称、右侧只读文字 | `label`、`value` |
 | `select` | 下拉选择 | `label`、`items`、`value`、`callback` |
-| `toggle` | 左右选项开关（点击切换 + 滑动动画） | `label`、`value`、`callback`、`off_text`、`on_text` |
+| `toggle` | iOS 比例胶囊开关（点击切换 + 滑动动画） | `label`、`value`、`callback`、`off_text`、`on_text` |
 | `number` | 可直接输入的数值框 | `label`、`value`、`min`、`max`、`step`、`suffix`、`callback` |
 | `slider` | 滑块与精确数值框 | 与 `number` 相同 |
 | `note` | 说明文字 | `text` |
@@ -205,7 +205,7 @@ if not settings.add_option("display", {
 
 ### 默认行分隔线
 
-`configure()` 和 `add_option()` 默认在顶层相邻可见设置行之间生成 1 px 灰色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理。折叠组内各层普通子行之间不再画自动长横线，仅由层级竖线和行中心短支线连接，与按键绑定一致；展开子组之后的收尾边界仍保留。
+`configure()` 和 `add_option()` 默认在顶层相邻可见设置行之间生成 1 px 主题色细线，无需手动写 `divider`。只读值、下拉、开关、数值、滑条、操作按钮和分组标题都按同一规则处理。折叠组内各层普通子行之间不再画自动长横线，仅由层级竖线和行中心短支线连接，与按键绑定一致；展开子组之后的收尾边界仍保留。
 
 显式 `divider` 与 `note` 是段落边界，不会叠加自动线，因此已有手动分隔布局保持原样。条件隐藏行不会留下多余线或首尾线；折叠分组时其内部线随子项隐藏。自动线不占用设置 ID，也不会出现在 `get_values()` 或触发回调。
 
@@ -304,9 +304,9 @@ if not settings.set_value("audio.volume", 60.0, true):
 - **中文字体。** 当前资源使用完整 Noto Sans CJK SC；替换字体后应检查新增文案的字形覆盖
 
 
-### 左右选项开关与动画
+### 胶囊开关与动画
 
-`toggle` 固定显示左右两个选项，默认左侧「关」、右侧「开」。点击按钮任意位置都会切换状态，无需拖动；深色选中底块以 0.20 秒缓出动画滑向另一侧。`off_text` / `on_text` 可自定义显示文字，例如 `"Off"` / `"On"`，两侧的业务值仍固定为 `false` / `true`。
+`toggle` 使用经典 iOS 的 51:31 比例，默认轨道 102×62 px、内边距 4 px、白色圆滑块直径 54 px。左侧关闭为灰色，右侧开启为 Godot 蓝色；没有液态玻璃效果。点击按钮任意位置切换，无需拖动，圆滑块以 0.20 秒缓出动画滑向另一侧，快速反向切换平滑续接。轨道外侧仅显示当前「关」或「开」；`off_text` / `on_text` 仍可自定义为 `"Off"` / `"On"` 等文字，业务值保持 `false` / `true`。默认整个按钮最小尺寸 226×72 px，在设置行右侧对齐；更长的文案可在场景中扩宽标签和根节点。RTL 布局中滑块方向镜像，左右方向键选择对应的视觉侧。
 
 - Tab 聚焦整个按钮；Space / Enter 切换；← 选择关，→ 选择开。聚焦时显示外框
 - `get_control(id)` 仍返回兼容 `Button` 的控件，支持 `button_pressed`、`disabled`、`grab_focus()`
@@ -423,7 +423,7 @@ func apply_binding(value: Variant, id: String) -> void:
 - `keybinding.tscn`、`keybinding_group.tscn`、`bindings_header.tscn`：三列按键布局。三者 Function 列宽应保持一致；运行时只减去实际祖先缩进，以保持主/次按键列跨层级对齐
 - `binding_capture.tscn`：遮罩、面板、标题、提示、清除与取消按钮，均是可视节点
 - `tooltip.tscn`：提示文本水平和垂直居中；按键行控件通过 tooltip 脚本实例化，脚本只填文字
-- `segmented_toggle.tscn`：开关轨道、滑动选中块、左右标签。脚本仅处理键盘、状态、动画位置和随状态变化的文字颜色；颜色/文案/动画时长可在根节点导出属性中修改
+- `segmented_toggle.tscn`：保留历史文件名与 Button API；可编辑的 Track 纹理区域、轨道外侧 Off/On 状态标签。图形与大厅 CheckButton 共用生成器，保持胶囊与圆滑块比例；颜色/文案/动画时长可在根节点导出属性中修改
 - `settings_page.tscn`：页面大小、返回按钮、主题、页签位置；hover/未选中页签共用相同边距，避免鼠标悬停造成文字偏移
 
 运行时不会每次重设场景里的字号、普通行尺寸、边距、间距和样式。schema 显式提供的 `row_height` / `label_width` / `font_size` / `height` 仍优先于场景默认值；标签、选项、数值范围、绑定提示等业务数据也由 schema 接管。`node_name` / `label_name` / `control_name` / `number_name` / `details_name` 仍可覆盖运行时名称。编辑组件时请保留脚本使用的节点名与结构（例如 Value、Label、Number、Rows、Function、Primary、Secondary）。复用设置页时应携带整个 `settings/components/` 目录。
@@ -436,4 +436,4 @@ func apply_binding(value: Variant, id: String) -> void:
 
 全局字体、字号、RGBA（含背景、卡片、页签、输入框、hover/disabled/focus、错误文字、tooltip、遮罩、层级线与开关动画）统一由 `ui/theme/ui_config.tres` 配置，设置页直接使用共享 Theme。详见 [统一配色与字体](THEME.zh-CN.md)。
 
-说明项 `note` 可使用 `font_role: "Detail"` / `"Secondary"` 等命名字号，随全局资源更新；原有 `font_size` 仍是显式局部像素覆盖，优先于 `font_role`。普通 Control 的 Theme Overrides 不会被刷新逻辑删除。ColorRect / Line2D 要单独配色时先关闭 `Use Global Color`，再改 Color / Default Color；开关根节点通过 `Use Global Colors` 选择全局或局部动画文字色。尺寸、边距、行高、线宽仍编辑组件场景。
+说明项 `note` 可使用 `font_role: "Detail"` / `"Secondary"` 等命名字号，随全局资源更新；原有 `font_size` 仍是显式局部像素覆盖，优先于 `font_role`。普通 Control 的 Theme Overrides 不会被刷新逻辑删除。ColorRect / Line2D 要单独配色时先关闭 `Use Global Color`，再改 Color / Default Color；开关根节点通过 `Use Global Colors` 选择全局或局部关闭/开启/滑块/边框及状态文字色。尺寸、边距、行高、线宽仍编辑组件场景。

@@ -14,7 +14,7 @@ func run() -> void:
 	check(demo.callback_count == 0, "Demo initialization does not apply")
 	page.get_control("enabled").button_pressed = false
 	check(demo.callback_count == 1 and demo.applied.enabled == false, "Toggle applies bool through external Callable")
-	check(demo.get_node("Preview").modulate == Color(0.55, 0.25, 0.25), "Callback really changes independent preview")
+	check(demo.get_node("Preview").modulate == load("res://ui/theme/ui_config.tres").demo_inactive, "Callback really changes independent preview using configured inactive color")
 	page.get_control("gain").value = 0.31
 	check(demo.callback_count == 2 and is_equal_approx(demo.applied.gain, 0.31), "Slider applies one callback")
 	check(is_equal_approx(page.get_number_control("gain").value, 0.31), "Slider syncs decimal precise field")
