@@ -25,6 +25,10 @@ const MAPS := ["欢乐广场", "云端乐园", "海岛营地"]
 const ROUNDS := [3, 5, 10]
 
 func _ready() -> void:
+	if "--minigame-demo" in OS.get_cmdline_user_args() and not get_tree().has_meta("minigame_demo_started"):
+		get_tree().set_meta("minigame_demo_started", true)
+		get_tree().change_scene_to_file.call_deferred("res://examples/minigame_loading_demo.tscn")
+		return
 	if "--settings-demo" in OS.get_cmdline_user_args():
 		get_tree().change_scene_to_file.call_deferred("res://examples/settings_demo.tscn")
 		return
@@ -59,6 +63,8 @@ func _ready() -> void:
 	$Rooms/Join0.pressed.connect(func(): open_lobby("周五快乐局", false))
 	$Rooms/Join1.pressed.connect(func(): open_lobby("再来一局", false))
 	$Lobby/Back.pressed.connect(func(): show_page("Home"))
+	$MinigameDriver.bind_page($Minigame)
+	$Minigame.back_requested.connect(func(): show_page("Lobby"))
 	$Lobby/Ready.pressed.connect(toggle_ready)
 	$Lobby/Game.pressed.connect(func(): game_index = (game_index + 1) % GAMES.size(); update_lobby())
 	$Lobby/Map.pressed.connect(func(): map_index = (map_index + 1) % MAPS.size(); update_lobby())
@@ -81,7 +87,7 @@ func _ready() -> void:
 
 func show_page(next_page: String) -> void:
 	close_modal()
-	for key in ["Home", "Rooms", "Lobby", "Settings"]:
+	for key in ["Home", "Rooms", "Lobby", "Settings", "Minigame"]:
 		get_node(key).visible = key == next_page
 	page = next_page
 	if page == "Settings":
@@ -89,9 +95,12 @@ func show_page(next_page: String) -> void:
 	update_status()
 	$Toast.hide()
 	var target := {"Home": "Home/Start", "Rooms": "Rooms/Join0", "Lobby": "Lobby/Ready", "Settings": "Settings/Back"}
-	get_node(target[page]).grab_focus()
+	$Status.visible = page != "Minigame"
+	if page == "Minigame": $Minigame.focus_primary()
+	else: get_node(target[page]).grab_focus()
 
 func open_lobby(title: String, hosting: bool) -> void:
+	$MinigameDriver.initialized = false
 	is_host = hosting
 	guest_ready = false
 	game_index = selected_game if hosting else 0
@@ -186,7 +195,8 @@ func submit_direct() -> void:
 
 func toggle_ready() -> void:
 	if is_host:
-		show_demo("开始游戏流程演示 · 尚未接入真实游戏")
+		$MinigameDriver.begin(player_name)
+		show_page("Minigame")
 	else:
 		guest_ready = not guest_ready
 		update_lobby()
@@ -370,6 +380,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			close_game_dropdown()
 		elif not modal_kind.is_empty():
 			close_modal()
+		elif page == "Minigame":
+			show_page("Lobby")
 		elif page != "Home":
 			show_page("Home")
 		else:

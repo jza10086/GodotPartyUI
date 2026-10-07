@@ -92,3 +92,7 @@ Resolver.clear_registered_icons()
 功能文字、fallback 与分隔符继承共享字体和字号；正常图标颜色使用功能文字的主题色，禁用和高亮也读取共享 Theme。`ui_config.tres` 修改后立即刷新；功能 Label 的本地颜色覆盖在状态切换后恢复。
 
 新增专项：`tests/test_input_prompts.gd`。同时保留导航、键绑定捕获、主题、布局、悬停、iOS 开关等全量回归。Headless 测试只验证逻辑 / 资源 / 几何；正式视觉验收仍应通过实际 Godot 窗口截图。
+
+## 多动作合并提示
+
+`action_names: PackedStringArray` 可把多个动作的绑定图标放在同一功能文字前，例如四方向移动。非空时优先于 `action_name` / 固定键；`binding_index` 对每个动作分别生效，`key_separator` 分隔各方向。动作重绑最迟 0.2 秒刷新，缺失 / 未绑定动作明确回退。`set_binding()` 会清除两种动作模式。小游戏 demo 使用四方向真实 InputMap 的主按键合并显示「移动」，不再硬编码 WASD。

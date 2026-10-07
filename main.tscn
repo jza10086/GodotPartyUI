@@ -11,6 +11,9 @@
 [ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
 [ext_resource type="PackedScene" path="res://ui/components/input_prompt.tscn" id="input_prompt"]
 
+[ext_resource type="PackedScene" path="res://ui/pages/minigame_loading.tscn" id="scene_minigame"]
+[ext_resource type="Script" path="res://examples/minigame_demo_driver.gd" id="minigame_driver"]
+
 [node name="PartyUI" type="Control" unique_id=1811586604]
 layout_mode = 3
 anchors_preset = 15
@@ -135,6 +138,14 @@ anchors_preset = 0
 [node name="Settings" parent="." unique_id=1517169231 instance=ExtResource("settings")]
 visible = false
 anchors_preset = 0
+
+[node name="Minigame" parent="." instance=ExtResource("scene_minigame")]
+visible = false
+layout_mode = 1
+show_demo_controls = true
+
+[node name="MinigameDriver" type="Node" parent="."]
+script = ExtResource("minigame_driver")
 
 [node name="Modal" parent="." unique_id=54842109 instance=ExtResource("scene_modal")]
 visible = false

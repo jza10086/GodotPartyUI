@@ -18,6 +18,12 @@ const GLYPH = preload("res://ui/components/input_glyph.tscn")
 	set(value):
 		action_name = value
 		_queue_refresh()
+## Optional grouped actions (for example four movement directions). Each resolves
+## live from InputMap; binding_index selects one binding per action.
+@export var action_names := PackedStringArray():
+	set(value):
+		action_names = value
+		_queue_refresh()
 @export_range(-1, 32, 1) var binding_index := -1:
 	set(value):
 		binding_index = value
@@ -65,11 +71,24 @@ func configure(binding: Variant, description: String) -> void:
 
 func set_binding(binding: Variant) -> void:
 	action_name = &""
+	action_names = PackedStringArray()
 	_binding = binding.duplicate() if binding is Array else binding
 	_has_binding = true
 	refresh()
 
 func _resolve() -> Array[Dictionary]:
+	if not action_names.is_empty():
+		var grouped: Array[Dictionary] = []
+		for action in action_names:
+			if not grouped.is_empty(): grouped.append(Resolver.separator(key_separator))
+			if not InputMap.has_action(action):
+				grouped.append_array(Resolver.key_tokens(0))
+				continue
+			var events := InputMap.action_get_events(action)
+			if binding_index >= 0:
+				grouped.append_array(Resolver.event_tokens(events[binding_index]) if binding_index < events.size() else Resolver.key_tokens(0))
+			else: grouped.append_array(Resolver.tokens(events))
+		return grouped
 	if not action_name.is_empty():
 		if not InputMap.has_action(action_name): return Resolver.key_tokens(0)
 		var events := InputMap.action_get_events(action_name)
@@ -122,7 +141,7 @@ func refresh() -> void:
 	tooltip_text = get_accessible_text()
 	accessibility_name = tooltip_text
 	_update_visuals()
-	set_process(not Engine.is_editor_hint() and not action_name.is_empty())
+	set_process(not Engine.is_editor_hint() and (not action_name.is_empty() or not action_names.is_empty()))
 
 func _on_function_theme_changed() -> void:
 	# Local Label overrides do not notify ancestor Controls. Keep the icon's

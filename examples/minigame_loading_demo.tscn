@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="Script" path="res://examples/minigame_loading_demo.gd" id="script"]
+[ext_resource type="PackedScene" path="res://ui/pages/minigame_loading.tscn" id="page"]
+[ext_resource type="Script" path="res://examples/minigame_demo_driver.gd" id="driver"]
+[node name="MinigameLoadingDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("script")
+[node name="Page" parent="." instance=ExtResource("page")]
+layout_mode = 1
+show_demo_controls = true
+[node name="Driver" type="Node" parent="."]
+script = ExtResource("driver")
