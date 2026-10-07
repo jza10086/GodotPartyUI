@@ -2,16 +2,26 @@
 
 ## 一个入口
 
-在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，直接在 Inspector 编辑并保存。**全部 56 个设置项及六个分组均显示中文**，将鼠标停在属性名上可阅读中文说明：用途、当前影响的控件，以及对应的英文脚本字段。每个颜色都保留完整 RGBA 编辑；A（alpha）为透明度，0 完全透明、1 不透明。
+当前正式默认主题为 Godot 蓝色系；这是项目的默认外观，仍可通过以下配置调整。
+
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，直接在 Inspector 编辑并保存。**全部 59 个设置项及六个分组均显示中文**，将鼠标停在属性名上可阅读中文说明：用途、当前影响的控件，以及对应的英文脚本字段。每个颜色都保留完整 RGBA 编辑；A（alpha）为透明度，0 完全透明、1 不透明。
 
 - **字体与字号**：`界面字体` 接收 Godot `Font` 资源，默认使用项目内 Noto Sans CJK SC。17 个字号层级各自独立，单位为像素，范围 8～160；例如 `微型提示字号`（18）实际控制主页右上角“编辑玩家资料”，`调试信息字号`（19）控制右下角引擎/协议/场景信息，`设置项字号`（26）控制设置行及输入控件，`操作与页签字号`（28）控制主菜单按钮/页签，`品牌标题字号`（72）控制主菜单品牌标题。其余层级可悬停查看各自用途
 - **文字与状态**：普通、悬停、禁用、深色底文字，错误提示及独立示例的启用/关闭/按键反馈色
-- **表面与控件**：普通/弱化表面、主色背景、悬停表面、普通/悬停边框、焦点强调、分隔与层级线、文本选区、左右开关边框及选中文字
+- **表面与控件**：普通/弱化表面、主色背景、悬停表面、普通/悬停边框、焦点强调、分隔与层级线、文本选区、开关边框、外侧状态文字、关闭/开启轨道及白色滑块
 - **页面与遮罩**：设置页整屏背景、主菜单/列表/大厅/状态区底板、普通弹窗与按键录入遮罩，以及 F1 布局标尺
 - **展示占位背景**：主界面全屏展示区的天空、远/近景色块、地面、地平线、标题与说明文字
-- **开关禁用效果**：`开关禁用透明度` 是左右开关两侧文字原 alpha 的乘数，范围 0～1；不会抹掉颜色自身的透明度
+- **开关禁用效果**：`开关禁用透明度` 是开关轨道、滑块和状态文字原 alpha 的乘数，范围 0～1；不会抹掉颜色自身的透明度
 
 下拉按钮箭头跟随各交互态文字色；PopupMenu 的 radio/check/子菜单图标保留原生尺寸和透明轮廓，使用 `普通文字颜色` / `禁用文字颜色`。
+
+### 悬停、选中与键盘焦点
+
+- **原生 CheckButton / CheckBox**（例如大厅高级设置）：开/关只改变选中指示；鼠标离开后，两种值都恢复普通背景、边框和文字。`pressed` 使用普通样式，`hover_pressed` 与 `hover` 使用相同悬停样式，因此切换值不会让整行持续高亮，也不会吞掉悬停效果
+- **OptionButton 下拉触发器**：正常状态使用普通表面；悬停和展开按下态使用统一的悬停表面、边框、文字及箭头颜色。PopupMenu 菜单项沿用相同悬停表面与文字颜色；滑过菜单项不会改变已选值，确认选项后才提交
+- 键盘焦点保留独立焦点边框，禁用控件使用弱化表面和禁用文字；这些状态不依赖开关值。原生 `Theme Overrides` 仍然优先，可分别覆盖 `normal` / `pressed` / `hover` / `hover_pressed` / `disabled` / `focus`
+- **胶囊开关**：原生 CheckButton 与通用设置开关共用 102×62 px、51:31 比例的图形生成器，4 px 内边距、54 px 白色圆滑块；关闭灰色、开启 Godot 蓝。高级设置的 CheckButton 保留原生控件与业务信号，用独立纹理实现 0.20 秒滑动；普通 CheckButton 也使用同尺寸主题图标。通用设置在轨道左侧显示当前状态文字，不再把「关/开」写在滑块内部。快速反向切换会从当前位置继续滑动
+- 全局 `button_checked_color` / `button_unchecked_color` 为白色，避免原生 tint 把白色滑块染蓝；图标的轨道、滑块、边框和禁用透明度由对应配置生成。节点显式图标覆盖仍优先
 
 ### 中文显示与旧配置兼容
 
@@ -22,6 +32,8 @@
 中文入口保留原生 Font 选择器、带 alpha 的颜色选择器、数值范围、还原默认值与撤销/重做。修改中文入口会调用原字段 setter，只发出一次 `changed` 通知。新增字段或调整默认值时，应同步维护英文存储字段及中文代理的默认值，并运行下面的 Inspector 专项回归，避免还原按钮出现偏差。
 
 主菜单、列表、大厅、全部弹窗、动态 schema 设置页、独立示例、tooltip、下拉菜单、按键录入层、层级连接线和开关动画使用这一个资源。Godot 品牌图标保留原始配色。
+
+默认开关开启色直接取自图标的 `#478cbf`；带白色文字的主按钮/选中页签使用同色系更深的 `#2f6f9f`，普通文字为深蓝 `#19384f`，卡片为浅蓝白 `#f4f9fd`，页面为 `#e8f2f8`。白字与主色默认对比度约 5.39:1，避免直接把图标蓝套在所有文字背景上。关闭轨道保持中性灰 `#b8b8bd`，不因全局蓝色调失去开/关区分。
 
 运行中的同一份 Resource 被修改时会同步更新已存在和随后实例化的控件，无需重新 configure；修改不会触发业务回调。配色、背景、共享字体/字号支持 2D 编辑器预览。编辑器里的 `@tool` 配色绑定仅更新视觉，不调用业务逻辑，也不把设置页 schema 生成为编辑器子节点。
 
@@ -35,7 +47,7 @@
 2. **字号/语义预设**：`Theme Type Variation` 选择命名层级，例如 `PartyLabelSetting`、`PartyButtonAction`、`PartyButtonActionPrimary`、`PartyLabelNoteError`。没有本地 override 时，由统一资源决定对应字号/颜色。字号层级与字体独立，换字体不会把各级字号变成同一个大小
 3. **背景、遮罩、ColorRect 分隔线**：关闭该节点脚本属性 `Use Global Color`，再编辑原生 `Color`。保持开启时，`Color Role` 选择统一语义色。恢复开启会立即重新跟随全局
 4. **Line2D 层级线**：同样先关闭 `Use Global Color`，再编辑原生 `Default Color`。`HierarchyLine`、`HeaderConnection` 和 `BranchTemplate` 可分别控制。运行时各分支继承 `BranchTemplate`；改线宽、点位和缩进仍使用原场景工作流
-5. **左右开关**：关闭根节点 `Use Global Colors`，使用已有 `Inactive Text Color`、`Active Text Color`、`Focus Color`。两侧 Label 的显式 `Theme Overrides > Colors > Font Color` 也会保留。选中色块另在 `Selection` 上关闭 `Use Global Color` 后编辑；Track 样式按下一条覆盖。位置与动画行为不变
+5. **胶囊开关**：关闭根节点 `Use Global Colors`，设置 `Off Color` / `On Color` / `Thumb Color` / `Border Color`；通用设置还保留 `Inactive Text Color`、`Active Text Color`、`Focus Color` 和 Off/On Label 的显式字体/文字 Theme Overrides。`Track` 是场景中的 TextureRect，可编辑其尺寸；图形始终等比显示为 51:31，控件扩宽不会把滑块拉成长条。旧 `off_text` / `on_text`、Button、schema 与 Callable API 保留；原内部 Selection 色块改为真正圆形滑块，不再作为独立 ColorRect 编辑。原生 CheckButton 的显式 Theme 图标覆盖优先于生成图标；本地 `Disabled Opacity` 可单独调禁用透明度，`Switch Size` 可编辑指示器尺寸。动画像素不会写入保存的场景，只保留可重建的小型资源标记，重载后继续跟随当前配置
 6. **卡片等绑定 StyleBox**：若要单个节点独立，先在该节点的 `Theme Overrides > Styles` 给资源 **Make Unique**，再关闭该 StyleBox 的 `Use Global Colors`，然后改 `Bg Color` / `Border Color`。也可以直接提供普通 StyleBoxFlat。不要直接改共享 `card.tres` 来做单节点覆盖
 7. **动态 schema 的说明字号**：`font_role` 使用上述后缀名，如 `Detail` / `Secondary`，跟随统一字号；显式 `font_size` 仍是局部像素 override，同时提供时 `font_size` 优先。现有 API 使用者无需迁移显式 override
 
@@ -55,6 +67,10 @@ Theme 中已有的字号变体遵循 `Party` + 原生控件类型 + 字号层级
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
+godot --headless --path . --script res://tests/test_hover_states.gd
+godot --headless --path . --script res://tests/test_ios_switches.gd
 ```
 
-专项测试覆盖全局 RGBA/字体/字号修改，既有和新建场景、动态 schema、tooltip、弹窗/遮罩/展示背景、交互态、开关动画，以及局部覆盖和恢复全局。测试在内存中改配置并恢复，不写入正式主题。Inspector 专项另检查全部 56 项中文名称/说明/类型/范围/默认值、英文 API 双向同步、单次通知、UndoRedo、Font 连接、深复制，以及所有旧英文键自定义值的读取、中文编辑、保存和重载；临时 `.tres` 仅写入 `user://` 并清理。headless 检查不等同于真实 Inspector 悬停和视觉验收。
+专项测试覆盖全局 RGBA/字体/字号修改，既有和新建场景、动态 schema、tooltip、弹窗/遮罩/展示背景、交互态、开关动画，以及局部覆盖和恢复全局。测试在内存中改配置并恢复，不写入正式主题。Inspector 专项另检查全部 59 项中文名称/说明/类型/范围/默认值、英文 API 双向同步、单次通知、UndoRedo、Font 连接、深复制，以及所有旧英文键自定义值的读取、中文编辑、保存和重载；临时 `.tres` 仅写入 `user://` 并清理。headless 检查不等同于真实 Inspector 悬停和视觉验收。
+
+开关像素回归同时检查端点、圆形/胶囊轮廓、镜像和禁用透明度。Godot headless 虚拟渲染器不刷新 ImageTexture 的读回缓存，因此动态帧在 headless 下检查实际上传所用的 CPU 图像；带渲染器时检查真实纹理读回。运行截图与交互视觉验收仍需真实渲染器。

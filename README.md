@@ -1,6 +1,6 @@
 # GODOT PARTY · 主界面交互原型
 
-原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。灰阶线框风格，全部界面均使用原生 Control 节点；通用设置页按输入数据实例化可编辑组件场景，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
+原生 **Godot 4.7.2 stable** UI 工程（验证版本：`4.7.2.stable.official.ed1daf0bf`）。当前正式默认采用 Godot 蓝色系的轻量平面风格，全部界面均使用原生 Control 节点；通用设置页按输入数据实例化可编辑组件场景，没有烘焙界面图片；官方 Godot 蓝色机器人头通过独立 SVG TextureRect 显示。
 
 ## 打开与运行
 
@@ -12,14 +12,16 @@
 
 ## 统一配色与字体
 
-在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。全部 56 个设置项及六个分组已中文化，悬停属性名可看中文用途说明；英文脚本 API 和旧 `.tres` 配置值保持兼容。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
+在 Godot 文件系统面板选中 **`ui/theme/ui_config.tres`**，在 Inspector 一次修改全局 RGBA、背景和字体/字号。全部 59 个设置项及六个分组已中文化，悬停属性名可看中文用途说明；英文脚本 API 和旧 `.tres` 配置值保持兼容。包含全屏展示区及装饰层、主菜单/列表/大厅/设置页、卡片/弹窗/遮罩、错误/交互态、层级线、开关和 tooltip；设置页与独立示例不再使用各自的字体或 Theme。
+
+默认强调色取自 Godot 图标蓝 `#478cbf`，配合浅蓝表面、深蓝文字与较深的主按钮色。大厅高级设置和通用设置开关统一为 **102×62 px（51:31）** 胶囊：白色圆滑块、关闭灰色、开启蓝色、0.20 秒滑动，没有玻璃效果。开关状态不让整行常亮，鼠标悬停、键盘焦点和禁用仍分别表达。新增关闭轨道、开启轨道、滑块三个 RGBA 配置，旧英文 API 和配置可继续读取。
 
 普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
 
 ## 通用设置页（本轮新增）
 
 - 可复用场景：`settings/settings_page.tscn`，实现：`settings/settings_page.gd`
-- 根据输入生成页签、静态选项、下拉选项框、左右选项开关（点击切换与滑动动画）、数值框、数值滑条（含精确输入）、分隔线、说明、动作按钮、条件折叠分组和双槽位按键绑定
+- 根据输入生成页签、静态选项、下拉选项框、iOS 比例胶囊开关（点击切换与滑动动画）、数值框、数值滑条（含精确输入）、分隔线、说明、动作按钮、条件折叠分组和双槽位按键绑定
 - 通过稳定 ID 调用 `configure` / `add_tab` / `add_option` / `get_value` / `get_values` / `set_value` / `clear`，无需硬编码节点路径
 - 修改值调用传入的 `Callable(value, id)`；动作按钮调用 `Callable(id)`。初始化、滑块与数值框同步、静默回填不会重复应用；可选统一 `setting_changed(id, value)` 信号
 - 按键绑定由组件场景组成「功能名称 / 主按键 / 次要按键」三列，支持展开分组和功能行子操作、自然滚动、组合键、清空 / 取消和同范围冲突检查。Esc 取消录入，Delete / Backspace 清空，单独修饰键不提交；录入时消费快捷键，不触发背景返回或截图
@@ -132,6 +134,7 @@ godot --headless --path . --script res://tests/test_settings_layout.gd
 godot --headless --path . --script res://tests/test_settings_demo.gd
 godot --headless --path . --script res://tests/test_settings_api_review.gd
 godot --headless --path . --script res://tests/test_segmented_toggle.gd
+godot --headless --path . --script res://tests/test_ios_switches.gd
 godot --headless --path . --script res://tests/test_settings_dividers.gd
 godot --headless --path . --script res://tests/test_settings_connected_dividers.gd
 godot --headless --path . --script res://tests/test_room_profile.gd
@@ -139,9 +142,14 @@ godot --headless --path . --script res://tests/test_keybindings.gd
 godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
+godot --headless --path . --script res://tests/test_hover_states.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
+
+本轮 iOS 胶囊开关与 Godot 蓝色主题在 **Godot 4.7.2** 上全量通过 **5591 项检查**，另通过真实退出、clean import、主界面与独立示例各 180 帧 headless smoke，无错误或警告。新增开关专项 **163 项**，覆盖 51:31 胶囊/54 px 圆滑块像素、端点及中间帧、真实点击/键盘、快速反向、禁用、RTL、重挂树、RGBA 动态配置、本地覆盖及场景保存重载；原开关 API 专项增至 **31 项**，统一主题 **1505 项**，中文 Inspector **1724 项**。headless 动态图像检查使用实际上传的 CPU 帧以避开虚拟渲染器的旧纹理读回缓存；另在真实 Godot 4.7.2 窗口验收主菜单、设置页、PopupMenu、tooltip 和两类开关：GPU 颜色/位置实时刷新，连续切换、移出悬停、键盘焦点及玩家只读禁用均正常，并保存原生 F12 截图。
+
+此前悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
 
 中文 Inspector 专项 **1452 项**：56 个中文字段及说明、原生类型/范围/默认还原值、英文 API 双向同步、单次通知、UndoRedo、字体连接、资源深复制、旧英文键自定义值的读取及中文编辑后保存重载。连同既有 3157 项，共 **4609 项通过**；另验证 Godot 原生文档导出的全部中文属性说明。
 

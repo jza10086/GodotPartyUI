@@ -41,6 +41,9 @@ const FIELDS := {
 	"selection": "文本选区颜色",
 	"toggle_border": "左右开关边框颜色",
 	"toggle_active_text": "左右开关选中文字颜色",
+	"toggle_off": "开关关闭轨道颜色",
+	"toggle_on": "开关开启轨道颜色",
+	"toggle_thumb": "开关滑块颜色",
 	"page_background": "设置页面背景颜色",
 	"menu_backdrop": "主菜单底板颜色",
 	"rooms_backdrop": "房间列表底板颜色",
@@ -62,6 +65,21 @@ const FIELDS := {
 	"disabled_opacity": "开关禁用透明度",
 }
 const GROUPS := ["字体与字号", "文字与状态", "表面与控件", "页面与遮罩", "展示占位背景", "开关禁用效果"]
+# Added tokens must default correctly when loading a resource made before the switch redesign.
+const SWITCH_FIELDS := ["toggle_off", "toggle_on", "toggle_thumb"]
+const BLUE_DEFAULTS := {
+	"text": "19384f", "text_hover": "102d43", "text_disabled": "52697b", "text_on_primary": "ffffff",
+	"error": "a62e3d", "success": "23704d", "demo_inactive": "52697b", "info": "2f6f9f",
+	"surface": "f4f9fd", "muted_surface": "ddeaf3", "primary": "2f6f9f", "hover_surface": "c5deef",
+	"border": "527d9a", "hover_border": "2f6f9f", "focus": "2f6f9f", "divider": "91b2ca", "selection": "478cbf4d",
+	"toggle_border": "8b9299", "toggle_active_text": "174d73", "toggle_off": "b8b8bd", "toggle_on": "478cbf", "toggle_thumb": "ffffff",
+	"page_background": "e8f2f8", "menu_backdrop": "f4f9fdf5", "rooms_backdrop": "f4f9fdf7", "lobby_backdrop": "f4f9fdfa", "status_backdrop": "f4f9fdf7",
+	"modal_overlay": "0e25389e", "capture_overlay": "0e253852", "ruler": "527d9a99",
+	"display_background": "dcecf7", "display_far_left": "c4dfef", "display_far_center": "cce4f3", "display_far_right": "b8d7ec",
+	"display_near_left": "9fc5df", "display_near_right": "8db9d7", "display_ground": "7babce", "display_horizon": "527d9a",
+	"display_text": "245879", "display_caption": "19384f",
+}
+const DEFAULTS_PATH := "user://config_inspector_defaults.tres"
 const LEGACY_PATH := "user://config_inspector_legacy.tres"
 const SAVED_PATH := "user://config_inspector_saved.tres"
 var checks := 0
@@ -136,12 +154,14 @@ func run() -> void:
 			if property.usage & PROPERTY_USAGE_STORAGE:
 				stored.append(property.name)
 	check(groups == GROUPS, "All six Inspector groups are Chinese and in order")
-	check(editable.size() == FIELDS.size(), "Exactly 56 Chinese settings are editable; no duplicate English rows")
-	check(stored.size() == FIELDS.size(), "Exactly 56 canonical fields are stored")
+	check(editable.size() == FIELDS.size(), "Exactly %d Chinese settings are editable; no duplicate English rows" % FIELDS.size())
+	check(stored.size() == FIELDS.size(), "Exactly %d canonical fields are stored" % FIELDS.size())
 	var docs := descriptions()
 	var source := FileAccess.get_file_as_string("res://ui/theme/ui_config.gd")
 	check(String(docs.get("micro_size", "")).contains("默认 18") and String(docs.get("micro_size", "")).contains("未设置本地字号覆盖") and not source.contains("这是一段micro_size的注释"), "Micro source documentation explains default, scope and replaces the placeholder")
 	check(String(docs.get("微型提示字号", "")).contains("编辑玩家资料"), "Micro tooltip identifies the actual profile hint")
+	verify_blue_defaults(config)
+	verify_switch_color_roles()
 	config.changed.connect(changed)
 	var undo := UndoRedo.new()
 	for field in FIELDS:
@@ -197,7 +217,7 @@ func run() -> void:
 	verify_font_forwarding(config)
 	verify_legacy_roundtrip()
 	config.changed.disconnect(changed)
-	for path in [LEGACY_PATH, SAVED_PATH]:
+	for path in [DEFAULTS_PATH, LEGACY_PATH, SAVED_PATH]:
 		if FileAccess.file_exists(path):
 			check(DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK, "Temporary resource removed: " + path.get_file())
 	print("RESULT: %d checks, %d failures" % [checks, failures])
@@ -221,13 +241,13 @@ func verify_font_forwarding(config: Resource) -> void:
 	check(changes == before + 1, "Reassigning identical font does not duplicate connections")
 
 func verify_legacy_roundtrip() -> void:
-	# A pre-localization resource with every English key customized, including Font.
+	# A real pre-redesign fixture: all 56 existing keys are customized and the three new keys are absent.
 	var text := "[gd_resource type=\"Resource\" load_steps=3 format=3]\n\n"
 	text += "[ext_resource type=\"Script\" path=\"res://ui/theme/ui_config.gd\" id=\"config\"]\n\n"
 	text += "[sub_resource type=\"SystemFont\" id=\"legacy_font\"]\nfont_names = PackedStringArray(\"Legacy Config Font\")\nallow_system_fallback = false\n\n"
 	text += "[resource]\nscript = ExtResource(\"config\")\nfont = SubResource(\"legacy_font\")\n"
 	for field in FIELDS:
-		if field != "font":
+		if field != "font" and field not in SWITCH_FIELDS:
 			text += field + " = " + var_to_str(alternate_value(field, 3)) + "\n"
 	var file := FileAccess.open(LEGACY_PATH, FileAccess.WRITE)
 	check(file != null, "Legacy fixture can be created")
@@ -240,10 +260,10 @@ func verify_legacy_roundtrip() -> void:
 	if legacy == null:
 		return
 	for field in FIELDS:
-		var expected: Variant = alternate_value(field, 3)
+		var expected: Variant = (CONFIG as Script).get_property_default_value(field) if field in SWITCH_FIELDS else alternate_value(field, 3)
 		if field == "font":
 			expected.font_names = PackedStringArray(["Legacy Config Font"])
-		check(same(legacy.get(field), expected), field + " preserves non-default legacy value")
+		check(same(legacy.get(field), expected), field + (" uses new default for absent legacy key" if field in SWITCH_FIELDS else " preserves non-default legacy value"))
 		check(same(legacy.get(FIELDS[field]), expected), FIELDS[field] + " displays loaded legacy value")
 		legacy.set(FIELDS[field], alternate_value(field, 4))
 	check(ResourceSaver.save(legacy, SAVED_PATH) == OK, "Chinese Inspector edits save successfully")
@@ -259,3 +279,70 @@ func verify_legacy_roundtrip() -> void:
 		check(same(reloaded.get(FIELDS[field]), alternate_value(field, 4)), FIELDS[field] + " reloads the edited value")
 		reloaded.set(field, alternate_value(field, 5))
 		check(same(reloaded.get(FIELDS[field]), alternate_value(field, 5)), field + " API remains writable after reload")
+
+func contrast_ratio(first: Color, second: Color) -> float:
+	# WCAG relative luminance is computed after converting sRGB to linear light.
+	var first_luminance := first.srgb_to_linear().get_luminance()
+	var second_luminance := second.srgb_to_linear().get_luminance()
+	return (maxf(first_luminance, second_luminance) + 0.05) / (minf(first_luminance, second_luminance) + 0.05)
+
+func verify_blue_defaults(config: Resource) -> void:
+	var shipped := ResourceLoader.load("res://ui/theme/ui_config.tres", "", ResourceLoader.CACHE_MODE_IGNORE) as Resource
+	check(shipped != null, "Shipped default configuration loads")
+	check(BLUE_DEFAULTS.size() == 40, "Palette fixture covers every color token, including three switch colors")
+	for field in BLUE_DEFAULTS:
+		var expected := Color(BLUE_DEFAULTS[field])
+		check(same(config.get(field), expected), field + " uses the Godot-blue default palette")
+		if shipped != null:
+			check(same(shipped.get(field), expected), field + " shipped resource follows the canonical default")
+	var icon := FileAccess.get_file_as_string("res://assets/godot_icon.svg")
+	check(icon.contains('fill="#478cbf"') and same(config.toggle_on, Color("#478cbf")), "Switch on-color exactly matches the unchanged Godot icon")
+	check(same(config.toggle_thumb, Color.WHITE), "Switch thumb defaults to opaque white")
+	check(absf(config.toggle_off.r - config.toggle_off.g) < 0.03 and absf(config.toggle_off.g - config.toggle_off.b) < 0.03, "Switch off-track remains neutral gray")
+	for background in ["surface", "muted_surface", "hover_surface", "page_background"]:
+		check(contrast_ratio(config.text, config.get(background)) >= 4.5, "Body text contrast is at least 4.5:1 on " + background)
+		check(contrast_ratio(config.text_hover, config.get(background)) >= 4.5, "Hover text contrast is at least 4.5:1 on " + background)
+		check(contrast_ratio(config.toggle_active_text, config.get(background)) >= 4.5, "Switch caption contrast is at least 4.5:1 on " + background)
+	check(contrast_ratio(config.text_on_primary, config.primary) >= 4.5, "Darker blue primary keeps white text contrast at least 4.5:1")
+	check(contrast_ratio(config.text_disabled, config.muted_surface) >= 4.5, "Read-only and placeholder text remains readable on muted surfaces")
+	check(contrast_ratio(config.text, config.surface.blend(config.selection)) >= 4.5, "Selected input text remains readable over the translucent blue selection")
+	for foreground in ["error", "success", "info", "demo_inactive"]:
+		check(contrast_ratio(config.get(foreground), config.surface) >= 4.5, foreground + " status text contrast is at least 4.5:1 on its surface")
+	for role in ["border", "focus"]:
+		check(contrast_ratio(config.get(role), config.surface) >= 3.0, role + " remains visible against the ordinary surface")
+	check(contrast_ratio(config.hover_border, config.hover_surface) >= 3.0, "Hovered border remains visible against hovered surface")
+	for background in ["display_background", "display_far_left", "display_far_center", "display_far_right", "display_near_left", "display_near_right", "display_ground"]:
+		check(contrast_ratio(config.display_text, config.get(background)) >= 3.0, "Large display title contrast is at least 3:1 on " + background)
+		check(contrast_ratio(config.display_caption, config.get(background)) >= 4.5, "Display caption contrast is at least 4.5:1 on " + background)
+	check(ResourceSaver.save(config, DEFAULTS_PATH) == OK, "Unmodified new default palette saves successfully")
+	var reloaded := ResourceLoader.load(DEFAULTS_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as Resource
+	check(reloaded != null, "Unmodified new default palette reloads successfully")
+	if reloaded != null:
+		for field in BLUE_DEFAULTS:
+			check(same(reloaded.get(field), config.get(field)), field + " default survives save and reload")
+
+func verify_switch_color_roles() -> void:
+	for script_path in ["res://ui/theme/theme_color_rect.gd", "res://ui/theme/theme_line.gd"]:
+		var script := load(script_path) as Script
+		var node: Node = script.new()
+		var roles := ""
+		for property in node.get_property_list():
+			if property.name == "color_role":
+				roles = property.hint_string
+		var config := CONFIG.new()
+		node.set("configuration", config)
+		var color_property := "color" if node is ColorRect else "default_color"
+		for field in SWITCH_FIELDS:
+			check(field in roles.split(","), script_path.get_file() + " exposes " + field + " in its Inspector color roles")
+			node.set("color_role", field)
+			check(same(node.get(color_property), config.get(field)), script_path.get_file() + " binds " + field)
+			var edited := Color(0.12, 0.35, 0.63, 0.42)
+			config.set(FIELDS[field], edited)
+			check(same(node.get(color_property), edited), script_path.get_file() + " follows live Chinese edits to " + field)
+			node.set("use_global_color", false)
+			node.set(color_property, Color(0.91, 0.22, 0.33, 0.71))
+			config.set(field, Color(0.52, 0.27, 0.81, 0.35))
+			check(same(node.get(color_property), Color(0.91, 0.22, 0.33, 0.71)), script_path.get_file() + " preserves local " + field + " override")
+			node.set("use_global_color", true)
+			check(same(node.get(color_property), config.get(field)), script_path.get_file() + " restores global " + field + " binding")
+		node.free()

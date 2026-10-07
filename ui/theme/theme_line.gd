@@ -7,7 +7,7 @@ const Config = preload("res://ui/theme/ui_config.gd")
 		use_global_color = value
 		notify_property_list_changed()
 		_apply_color()
-@export_enum("text", "text_hover", "text_disabled", "text_on_primary", "error", "success", "demo_inactive", "info", "surface", "muted_surface", "primary", "hover_surface", "border", "hover_border", "focus", "divider", "selection", "toggle_border", "toggle_active_text", "page_background", "menu_backdrop", "rooms_backdrop", "lobby_backdrop", "status_backdrop", "modal_overlay", "capture_overlay", "ruler", "display_background", "display_far_left", "display_far_center", "display_far_right", "display_near_left", "display_near_right", "display_ground", "display_horizon", "display_text", "display_caption") var color_role := "divider":
+@export_enum("text", "text_hover", "text_disabled", "text_on_primary", "error", "success", "demo_inactive", "info", "surface", "muted_surface", "primary", "hover_surface", "border", "hover_border", "focus", "divider", "selection", "toggle_border", "toggle_active_text", "toggle_off", "toggle_on", "toggle_thumb", "page_background", "menu_backdrop", "rooms_backdrop", "lobby_backdrop", "status_backdrop", "modal_overlay", "capture_overlay", "ruler", "display_background", "display_far_left", "display_far_center", "display_far_right", "display_near_left", "display_near_right", "display_ground", "display_horizon", "display_text", "display_caption") var color_role := "divider":
 	set(value):
 		color_role = value
 		_apply_color()

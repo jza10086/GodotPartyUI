@@ -7,7 +7,7 @@ const THEME_PATH := "res://ui/theme/party_theme.tres"
 const COLOR_FIELDS := [
 	"text", "text_hover", "text_disabled", "text_on_primary", "error", "success", "demo_inactive", "info",
 	"surface", "muted_surface", "primary", "hover_surface", "border", "hover_border", "focus", "divider",
-	"selection", "toggle_border", "toggle_active_text", "ruler",
+	"selection", "toggle_off", "toggle_on", "toggle_thumb", "toggle_border", "toggle_active_text", "ruler",
 	"page_background", "display_background", "menu_backdrop", "rooms_backdrop",
 	"lobby_backdrop", "status_backdrop", "modal_overlay", "capture_overlay",
 	"display_far_left", "display_far_center", "display_far_right", "display_near_left",
@@ -137,8 +137,8 @@ func verify_main(main: Node, context: String) -> void:
 	color_at(main.get_node("Home/Start"), "font_color", "text_on_primary", context + " primary button text")
 	color_at(main.get_node("Home/Start"), "font_focus_color", "text_on_primary", context + " primary focused text")
 	color_at(main.get_node("DisplayBackground/Placeholder"), "font_color", "display_text", context + " display title")
-	color_at(main.get_node("Modal/Advanced/Shuffle"), "button_checked_color", "primary", context + " native checked CheckButton")
-	color_at(main.get_node("Modal/Advanced/Shuffle"), "button_unchecked_color", "border", context + " native unchecked CheckButton")
+	check(main.get_node("Modal/Advanced/Shuffle").get_theme_color("button_checked_color").is_equal_approx(Color.WHITE), context + " native checked switch preserves multicolor texture")
+	check(main.get_node("Modal/Advanced/Shuffle").get_theme_color("button_unchecked_color").is_equal_approx(Color.WHITE), context + " native unchecked switch preserves white thumb")
 	color_at(main.get_node("DisplayBackground/Caption"), "font_color", "display_caption", context + " display caption")
 	for modal in ["Create", "Confirm", "Protocol", "Advanced", "Preset", "Direct", "Profile"]:
 		style_at(main.get_node("Modal/" + modal + "/Dialog"), "panel", "surface", context + " modal " + modal)
@@ -197,10 +197,10 @@ func verify_page(page: Node, context: String) -> void:
 		check(branch.default_color.is_equal_approx(config.divider), context + " generated branch follows RGBA")
 	var toggle: Button = page.get_control("toggle")
 	check(toggle.get("use_global_colors") == true, context + " toggle defaults to global colors")
-	check(toggle.get_node("Selection").color.is_equal_approx(config.primary), context + " toggle selection follows primary")
-	style_at(toggle.get_node("Track"), "panel", "muted_surface", context + " toggle track")
-	var track_style: StyleBoxFlat = toggle.get_node("Track").get_theme_stylebox("panel")
-	check(track_style.border_color.is_equal_approx(config.toggle_border), context + " toggle border follows RGBA")
+	check(not toggle.has_node("Selection"), context + " switch has no rectangular selection segment")
+	var track: TextureRect = toggle.get_node("Track")
+	check(track.size == Vector2(102, 62), context + " switch retains enlarged 51:31 capsule geometry")
+	verify_switch_pixels(track.texture, toggle.button_pressed, false, 1.0, config.toggle_off, config.toggle_on, config.toggle_thumb, config.toggle_border, context + " settings switch", live_switch_image(toggle))
 	font_at(toggle.get_node("Off"), "setting_size", context + " toggle Off")
 	font_at(toggle.get_node("On"), "setting_size", context + " toggle On")
 	var popup: PopupMenu = page.get_control("select").get_popup()
@@ -274,29 +274,47 @@ func verify_scene_defaults(path: String) -> void:
 	for subdirectory in directory.get_directories():
 		verify_scene_defaults(path.path_join(subdirectory))
 
+func colors_close(actual: Color, expected: Color) -> bool:
+	return absf(actual.r - expected.r) <= 0.005 and absf(actual.g - expected.g) <= 0.005 and absf(actual.b - expected.b) <= 0.005 and absf(actual.a - expected.a) <= 0.005
+
+func live_switch_image(control: Control, icon_name: String = "checked") -> Image:
+	# Godot's dummy headless renderer returns an ImageTexture's creation pixels
+	# after update(). Use the exact CPU image submitted to the renderer there;
+	# a real rendering backend must read the uploaded texture itself.
+	if control is CheckButton:
+		if DisplayServer.get_name() == "headless":
+			var key := "disabled" if icon_name.contains("disabled") else "normal"
+			if icon_name.ends_with("mirrored"): key = "disabled_mirrored" if key == "disabled" else "mirrored"
+			return control._frame_images[key]
+		return control.get_theme_icon(icon_name).get_image()
+	return control._frame_image if DisplayServer.get_name() == "headless" else control.get_node("Track").texture.get_image()
+
+func verify_switch_pixels(texture: Texture2D, selected: bool, mirrored: bool, opacity: float, off: Color, on: Color, thumb: Color, border: Color, context: String, source_pixels: Image = null) -> void:
+	check(texture != null and texture.get_size() == Vector2(102, 62), context + " is an enlarged 102x62 capsule")
+	if texture == null: return
+	var pixels := source_pixels if source_pixels != null else texture.get_image()
+	check(pixels != null and not pixels.is_empty(), context + " has readable generated pixels")
+	if pixels == null or pixels.is_empty(): return
+	var right := selected != mirrored
+	var track := on if selected else off
+	var track_sample := track
+	track_sample.a *= opacity
+	check(colors_close(pixels.get_pixel(20 if right else 81, 31), track_sample), context + " exposed track preserves semantic RGBA")
+	var thumb_sample := track.blend(Color(0, 0, 0, 0.12 * thumb.a)).blend(thumb)
+	thumb_sample.a *= opacity
+	check(colors_close(pixels.get_pixel(71 if right else 31, 31), thumb_sample), context + " endpoint thumb composites configured RGBA independently")
+	var outline_sample := track.blend(border)
+	outline_sample.a *= opacity
+	check(colors_close(pixels.get_pixel(51, 0), outline_sample), context + " capsule outline follows border RGBA")
+	check(pixels.get_pixel(0, 0).a == 0 and pixels.get_pixel(101, 0).a == 0 and pixels.get_pixel(0, 61).a == 0 and pixels.get_pixel(101, 61).a == 0, context + " rounded corners are transparent, never rectangular")
+
 func verify_checkbutton_icons(button: CheckButton) -> void:
-	for icon_name in ["checked", "unchecked"]:
-		var texture := button.get_theme_icon(icon_name)
-		check(texture != null, "Native CheckButton " + icon_name + " icon exists")
-		if texture == null:
-			continue
-		var pixels := texture.get_image()
-		check(pixels != null and not pixels.is_empty(), "Native CheckButton " + icon_name + " icon pixels are readable")
-		if pixels == null or pixels.is_empty():
-			continue
-		var colored_pixels := 0
-		var blue_pixels := 0
-		for y in range(pixels.get_height()):
-			for x in range(pixels.get_width()):
-				var pixel := pixels.get_pixel(x, y)
-				if pixel.a <= 0.01:
-					continue
-				if maxf(pixel.r, maxf(pixel.g, pixel.b)) - minf(pixel.r, minf(pixel.g, pixel.b)) > 0.04:
-					colored_pixels += 1
-				if pixel.b > pixel.r + 0.05 and pixel.b > pixel.g + 0.05:
-					blue_pixels += 1
-		print("ICON: %s size=%s chromatic_pixels=%d blue_pixels=%d" % [icon_name, str(texture.get_size()), colored_pixels, blue_pixels])
-		check(colored_pixels == 0, "Native CheckButton " + icon_name + " icon is neutral before configured tint")
+	# Animated instances intentionally share their current frame for both states.
+	# Verify all static Theme endpoints independently from the instance animation.
+	for icon_name in ["checked", "unchecked", "checked_disabled", "unchecked_disabled", "checked_mirrored", "unchecked_mirrored", "checked_disabled_mirrored", "unchecked_disabled_mirrored"]:
+		var opacity: float = config.disabled_opacity if icon_name.contains("disabled") else 1.0
+		verify_switch_pixels(shared_theme.get_icon(icon_name, "CheckButton"), icon_name.begins_with("checked"), icon_name.ends_with("mirrored"), opacity, config.toggle_off, config.toggle_on, config.toggle_thumb, config.toggle_border, "Native Theme " + icon_name)
+	verify_switch_pixels(button.get_theme_icon("checked" if button.button_pressed else "unchecked"), button.button_pressed, false, 1.0, config.toggle_off, config.toggle_on, config.toggle_thumb, config.toggle_border, "Native animated switch initial frame", live_switch_image(button, "checked" if button.button_pressed else "unchecked"))
 
 func verify_export_signals() -> void:
 	# Isolate setter notifications from the cost of updating all visible scenes.
@@ -441,8 +459,10 @@ func run() -> void:
 	local_toggle.active_text_color = Color(0.80, 0.11, 0.24, 0.67)
 	local_toggle.inactive_text_color = Color(0.18, 0.72, 0.29, 0.73)
 	local_toggle.focus_color = LOCAL_COLOR
-	local_toggle.get_node("Selection").set("use_global_color", false)
-	local_toggle.get_node("Selection").color = LOCAL_COLOR
+	local_toggle.off_color = LOCAL_COLOR
+	local_toggle.on_color = Color(0.12, 0.36, 0.79, 0.63)
+	local_toggle.thumb_color = Color(0.93, 0.82, 0.68, 0.72)
+	local_toggle.border_color = Color(0.17, 0.21, 0.39, 0.42)
 	local_toggle.queue_redraw()
 	var label_toggle := spawn("res://settings/components/segmented_toggle.tscn")
 	label_toggle.get_node("Off").add_theme_color_override("font_color", LOCAL_COLOR)
@@ -498,7 +518,7 @@ func run() -> void:
 	check(local_button.get_theme_stylebox("normal") == local_style and local_style.bg_color.is_equal_approx(LOCAL_COLOR), "Local StyleBox identity and RGBA survive config change")
 	check(local_background.color.is_equal_approx(LOCAL_COLOR), "Opted-out background keeps editable ColorRect.color")
 	check(local_line.default_color.is_equal_approx(LOCAL_COLOR), "Opted-out line keeps editable Line2D.default_color")
-	check(local_toggle.get_node("Selection").color.is_equal_approx(LOCAL_COLOR), "Toggle selection independently preserves local RGBA")
+	verify_switch_pixels(local_toggle.get_node("Track").texture, false, false, 1.0, local_toggle.off_color, local_toggle.on_color, local_toggle.thumb_color, local_toggle.border_color, "Opted-out switch after global edit", live_switch_image(local_toggle))
 	check(local_toggle.focus_color.is_equal_approx(LOCAL_COLOR), "Toggle retains local focus field")
 	check(local_toggle.get_node("Off").get_theme_color("font_color").is_equal_approx(local_toggle.active_text_color), "Opted-out toggle draws local active color")
 	check(local_toggle.get_node("On").get_theme_color("font_color").is_equal_approx(local_toggle.inactive_text_color), "Opted-out toggle draws local inactive color")
@@ -521,6 +541,8 @@ func run() -> void:
 	disabled_inactive.a *= config.disabled_opacity
 	check(global_toggle.get_node("Off").get_theme_color("font_color").is_equal_approx(disabled_active), "Disabled toggle multiplies configured active alpha")
 	check(global_toggle.get_node("On").get_theme_color("font_color").is_equal_approx(disabled_inactive), "Disabled toggle multiplies configured inactive alpha")
+	verify_switch_pixels(global_toggle.get_node("Track").texture, false, false, config.disabled_opacity, config.toggle_off, config.toggle_on, config.toggle_thumb, config.toggle_border, "Disabled settings switch", live_switch_image(global_toggle))
+	verify_checkbutton_icons(main.get_node("Modal/Advanced/Shuffle"))
 	global_toggle.disabled = false
 	label_toggle.button_pressed = true
 	label_toggle.sync_visual(false)
@@ -535,7 +557,8 @@ func run() -> void:
 	await settle()
 	check(saved_toggle.get("use_global_colors") == false, "Saved toggle retains global-color opt-out")
 	check(saved_toggle.get_node("Off").get_theme_color("font_color").is_equal_approx(local_toggle.active_text_color), "Saved local toggle retains active text RGBA")
-	check(saved_toggle.get_node("Selection").color.is_equal_approx(LOCAL_COLOR), "Saved toggle retains local selection color")
+	check(saved_toggle.off_color.is_equal_approx(LOCAL_COLOR) and saved_toggle.on_color == local_toggle.on_color and saved_toggle.thumb_color == local_toggle.thumb_color and saved_toggle.border_color == local_toggle.border_color, "Saved switch retains all local track/thumb/border RGBA")
+	verify_switch_pixels(saved_toggle.get_node("Track").texture, false, false, 1.0, saved_toggle.off_color, saved_toggle.on_color, saved_toggle.thumb_color, saved_toggle.border_color, "Saved local switch", live_switch_image(saved_toggle))
 	check(saved_label_toggle.get_node("Off").has_theme_color_override("font_color"), "Saved child-label override remains an ordinary Theme Override")
 	check(saved_label_toggle.get_node("Off").get_theme_color("font_color").is_equal_approx(LOCAL_COLOR), "Saved child-label override survives readiness")
 	check(not saved_global_toggle.get_node("Off").has_theme_color_override("font_color"), "Animated toggle does not serialize generated Theme Overrides")
