@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://ui/rooms_page.tscn" id="scene_rooms"]
 [ext_resource type="PackedScene" path="res://settings/settings_page.tscn" id="settings"]
 [ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+[ext_resource type="PackedScene" path="res://ui/components/input_prompt.tscn" id="input_prompt"]
 
 [node name="PartyUI" type="Control" unique_id=1811586604]
 layout_mode = 3
@@ -176,14 +177,34 @@ mouse_filter = 2
 script = ExtResource("color_binding")
 color_role = "status_backdrop"
 
-[node name="Keys" type="Label" parent="Status" unique_id=1257573792]
+[node name="Keys" type="HBoxContainer" parent="Status"]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 12.0
+offset_top = 8.0
 offset_right = 680.0
-offset_bottom = 42.0
-theme_type_variation = &"PartyLabelMeta"
-text = "TAB 切换  /  ENTER 确认  /  ESC 返回  /  F1 标尺"
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="Tab" parent="Status/Keys" instance=ExtResource("input_prompt")]
+layout_mode = 2
+keycodes = PackedInt64Array(4194306)
+function_text = "切换"
+
+[node name="Confirm" parent="Status/Keys" instance=ExtResource("input_prompt")]
+layout_mode = 2
+keycodes = PackedInt64Array(4194309)
+function_text = "确认"
+
+[node name="Back" parent="Status/Keys" instance=ExtResource("input_prompt")]
+layout_mode = 2
+keycodes = PackedInt64Array(4194305)
+function_text = "返回"
+
+[node name="Guide" parent="Status/Keys" instance=ExtResource("input_prompt")]
+layout_mode = 2
+keycodes = PackedInt64Array(4194332)
+function_text = "标尺"
 
 [node name="Engine" type="Label" parent="Status" unique_id=1791053118]
 layout_mode = 0

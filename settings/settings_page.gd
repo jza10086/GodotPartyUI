@@ -502,7 +502,7 @@ func _commit_binding(code: int) -> bool:
 	if not KeyBinding.valid_pair(pair) or not conflict.is_empty():
 		var other: String = id if conflict.is_empty() else conflict
 		last_error = "已用于「" + str(_entries[other].spec.get("label", other)) + "」，请先清除原绑定或换一个按键"
-		_capture_message.text = last_error + "\nEsc 取消 · Delete / Backspace 清除"
+		_capture_message.text = last_error
 		binding_conflict.emit(id, slot, other)
 		return false
 	# Dismiss before invoking arbitrary application callbacks (which may rebuild).

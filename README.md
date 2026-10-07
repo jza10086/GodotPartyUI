@@ -18,6 +18,12 @@
 
 普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
 
+## 按键图标提示
+
+已导入 [Kenney Input Prompts](https://kenney.nl/assets/input-prompts) 1.5A 的 104 个常用键盘 / 鼠标轮廓 SVG（原图约 89KB，CC0）。主界面与各页面共享的右下角、按键录入弹层现用「图标表示按键 + 文字表示功能」；实际 Godot 版本、协议与场景信息保持文本。独立设置示例还展示随真实绑定更新的跳跃 / 交互图标。
+
+复用 `ui/components/input_prompt.tscn`，可在 Inspector 编辑按键、功能、尺寸，也可传入组合键、InputEvent 或 InputMap 动作。支持备选键 / 按键序列、未知键文字回退、主题 / 字体实时更新及 4× SVG 高 DPI 导入；不修改绑定捕获系统。来源和原始许可在 `assets/input_prompts/`，API 与手柄扩展见 [`docs/INPUT_PROMPTS.zh-CN.md`](docs/INPUT_PROMPTS.zh-CN.md)。
+
 ## 通用设置页（本轮新增）
 
 - 可复用场景：`settings/settings_page.tscn`，实现：`settings/settings_page.gd`
@@ -143,13 +149,16 @@ godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
 godot --headless --path . --script res://tests/test_hover_states.gd
+godot --headless --path . --script res://tests/test_input_prompts.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
 
 本轮 iOS 胶囊开关与 Godot 蓝色主题在 **Godot 4.7.2** 上全量通过 **5591 项检查**，另通过真实退出、clean import、主界面与独立示例各 180 帧 headless smoke，无错误或警告。新增开关专项 **163 项**，覆盖 51:31 胶囊/54 px 圆滑块像素、端点及中间帧、真实点击/键盘、快速反向、禁用、RTL、重挂树、RGBA 动态配置、本地覆盖及场景保存重载；原开关 API 专项增至 **31 项**，统一主题 **1505 项**，中文 Inspector **1724 项**。headless 动态图像检查使用实际上传的 CPU 帧以避开虚拟渲染器的旧纹理读回缓存；另在真实 Godot 4.7.2 窗口验收主菜单、设置页、PopupMenu、tooltip 和两类开关：GPU 颜色/位置实时刷新，连续切换、移出悬停、键盘焦点及玩家只读禁用均正常，并保存原生 F12 截图。
 
-此前悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
+此前按键图标提示专项 **1524 项**：104 个源资产逐项检查纹理、透明边距裁切与原始 RGBA；覆盖键名别名、组合键、主 / 次空槽、物理键、鼠标与手柄 fallback、扩展多彩图标、InputMap 创建 / 重绑 / 清空 / 删除、真实设置回调、主题 / 字体 / 禁用 / 高亮与局部覆盖、可编辑场景保存重载、窄布局换行、缩放比例、被动输入与四页面状态信息。含既有回归及新增节点主题覆盖，官方 Godot 4.7.2 合计 **7135 项通过**；另通过空缓存首次 import、真实退出信号及主界面 / 独立示例 headless smoke。真实 Godot 窗口已验收主界面、录入弹层、动态双槽长组合键、实际 InputMap 触发、Meta 文字回退和 959×611 窄窗口，无提示裁切；VM 的无声卡 / VSync 支持警告属于环境限制，未出现脚本异常。
+
+悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
 
 中文 Inspector 专项 **1452 项**：56 个中文字段及说明、原生类型/范围/默认还原值、英文 API 双向同步、单次通知、UndoRedo、字体连接、资源深复制、旧英文键自定义值的读取及中文编辑后保存重载。连同既有 3157 项，共 **4609 项通过**；另验证 Godot 原生文档导出的全部中文属性说明。
 
