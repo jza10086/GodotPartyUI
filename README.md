@@ -26,9 +26,9 @@
 
 ## 大富翁悬浮交互 HUD（独立示例）
 
-为已有全幅 3D 场景提供透明 CanvasLayer UI：当前金钱 / 钻石、最多八人可折叠排行榜、道具背包、行动选项、掷骰按钮和随机事件弹窗。中心保持空白；棋盘与骰子均由外部 3D 场景负责，UI 不显示骰面、不模拟点数、移动或经济。全部布局与组件可在 `.tscn` 编辑，沿用共享蓝色主题。
+为已有全幅 3D 场景提供纯悬浮透明 CanvasLayer HUD：左上横向紧凑金币 / 钻石图标与数值，左下默认收起、点击向右展开的背包图片按钮，右下可在 Inspector 替换贴图的掷骰 TextureButton，以及右侧中部常驻半透明排行榜（最多八人，每人同时显示金币 / 钻石）。事件弹窗支持数据驱动的可选插图和选项，地产购买也通过事件呈现，没有独立行动区或购买按钮。中心保持空白；棋盘与骰子均由外部 3D 场景负责，UI 不显示骰子投掷结果、不模拟点数、移动或经济。全部布局与组件可在 `.tscn` 编辑，图标位于 `assets/ui/monopoly/`，沿用共享蓝色主题。
 
-打开 `examples/monopoly_demo.tscn` 按 F6，或 `godot --path . res://examples/monopoly_demo.tscn`；附加 `-- --eight-players` 查看八人排行。独立示例以极简全幅 3D 天空 / 地面演示浮层，有明确的本地示例控制器及事件预览按钮。F12 保存真实视口。正式接入使用 `ui/pages/monopoly_overlay.tscn` 的 `HUD`，或将 `monopoly_game.tscn` 放入已有 CanvasLayer。原有默认主菜单、房间、设置不变。完整数据 / 信号 / 模态输入接入与测试见 [`docs/MONOPOLY_UI.zh-CN.md`](docs/MONOPOLY_UI.zh-CN.md)。
+打开 `examples/monopoly_demo.tscn` 按 F6，或 `godot --path . res://examples/monopoly_demo.tscn`；附加 `-- --eight-players` 查看八人排行。独立示例以极简全幅 3D 天空 / 地面演示浮层，有明确的本地示例控制器及地产购买事件预览按钮。F12 保存真实视口到 `screenshots/21_monopoly_game.png`。正式接入使用 `ui/pages/monopoly_overlay.tscn` 的 `HUD`，或将 `monopoly_game.tscn` 放入已有 CanvasLayer。原有默认主菜单、房间、设置不变。完整数据 / 信号 / 插图资源 / 模态输入接入、旧 `actions` 与排行 `value` 迁移及测试见 [`docs/MONOPOLY_UI.zh-CN.md`](docs/MONOPOLY_UI.zh-CN.md)。
 
 ## 通用设置页（本轮新增）
 

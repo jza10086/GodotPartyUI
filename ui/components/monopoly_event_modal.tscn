@@ -50,7 +50,7 @@ theme_override_constants/separation = 18
 layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"PartyLabelNote"
-text = "随机事件"
+text = "特殊事件"
 theme_type_variation = &"PartyLabelMeta"
 
 [node name="Title" type="Label" parent="Center/Dialog/Margin/Content"]
@@ -62,9 +62,17 @@ theme_type_variation = &"PartyLabelCompactTitle"
 text_overrun_behavior = 3
 custom_minimum_size = Vector2(600, 0)
 
+[node name="Illustration" type="TextureRect" parent="Center/Dialog/Margin/Content"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 140)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="BodyScroll" type="ScrollContainer" parent="Center/Dialog/Margin/Content"]
 layout_mode = 2
-custom_minimum_size = Vector2(600, 150)
+custom_minimum_size = Vector2(600, 120)
 horizontal_scroll_mode = 0
 focus_mode = 2
 
@@ -78,7 +86,7 @@ autowrap_mode = 2
 
 [node name="ChoicesScroll" type="ScrollContainer" parent="Center/Dialog/Margin/Content"]
 layout_mode = 2
-custom_minimum_size = Vector2(600, 222)
+custom_minimum_size = Vector2(600, 174)
 horizontal_scroll_mode = 0
 focus_mode = 2
 
