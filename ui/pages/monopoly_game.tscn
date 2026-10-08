@@ -1,698 +1,150 @@
-[gd_scene load_steps=12 format=3]
-[ext_resource type="Script" path="res://ui/pages/monopoly_game.gd" id="script"]
+[gd_scene load_steps=8 format=3]
 [ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
 [ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
 [ext_resource type="StyleBox" path="res://ui/theme/muted.tres" id="muted"]
-[ext_resource type="PackedScene" path="res://ui/components/monopoly_tile.tscn" id="tile"]
-[ext_resource type="PackedScene" path="res://ui/components/monopoly_player.tscn" id="player"]
-[ext_resource type="PackedScene" path="res://ui/components/input_prompt.tscn" id="prompt"]
-[ext_resource type="Script" path="res://ui/theme/theme_color_rect.gd" id="color"]
-[ext_resource type="Texture2D" path="res://assets/monopoly_city.svg" id="city"]
-[ext_resource type="StyleBox" path="res://ui/theme/primary.tres" id="primary"]
-[ext_resource type="Texture2D" path="res://assets/godot_icon.svg" id="godot"]
-[node name="MonopolyGame" type="Control"]
+[ext_resource type="Script" path="res://ui/pages/monopoly_game.gd" id="script"]
+[ext_resource type="PackedScene" path="res://ui/components/monopoly_wallet.tscn" id="wallet"]
+[ext_resource type="PackedScene" path="res://ui/components/monopoly_event_modal.tscn" id="event"]
+
+[ext_resource type="StyleBox" path="res://ui/theme/monopoly_option_normal.tres" id="hint"]
+[node name="MonopolyHUD" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 theme = ExtResource("theme")
 script = ExtResource("script")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1920.0
-offset_bottom = 1080.0
+[node name="Wallet" parent="." instance=ExtResource("wallet")]
+layout_mode = 1
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 492.0
+offset_bottom = 136.0
+
+[node name="Leaderboard" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -392.0
+offset_top = 32.0
+offset_right = -32.0
 mouse_filter = 2
-script = ExtResource("color")
-color_role = "page_background"
+theme_override_constants/separation = 10
 
-[node name="Brand" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 40.0
-offset_right = 102.0
-offset_bottom = 94.0
-texture = ExtResource("godot")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Title" type="Label" parent="."]
-layout_mode = 0
-offset_left = 120.0
-offset_top = 33.0
-offset_right = 720.0
-offset_bottom = 91.0
-theme_type_variation = &"PartyLabelCompactTitle"
-text = "蓝湾大富翁"
-
-
-[node name="Subtitle" type="Label" parent="."]
-layout_mode = 0
-offset_left = 122.0
-offset_top = 94.0
-offset_right = 902.0
-offset_bottom = 127.0
-theme_type_variation = &"PartyLabelMeta"
-text = "BLUE BAY  /  城市棋盘 · 本地 UI 演示"
-
-
-[node name="Round" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1170.0
-offset_top = 42.0
-offset_right = 1530.0
-offset_bottom = 87.0
-theme_type_variation = &"PartyLabelSection"
-text = "第 03 / 12 回合"
-
-
-[node name="Back" type="Button" parent="."]
-layout_mode = 0
-offset_left = 1640.0
-offset_top = 44.0
-offset_right = 1872.0
-offset_bottom = 104.0
-text = "← 返回主菜单"
+[node name="Toggle" type="Button" parent="Leaderboard"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 58)
 theme_type_variation = &"PartyButtonSetting"
+text = "排行榜  ·  0 人  ▾"
 
-[node name="PlayersTitle" type="Label" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 162.0
-offset_right = 368.0
-offset_bottom = 206.0
-theme_type_variation = &"PartyLabelSection"
-text = "玩家资产"
+[node name="Body" type="PanelContainer" parent="Leaderboard"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("card")
 
+[node name="Margin" type="MarginContainer" parent="Leaderboard/Body"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="PlayerCount" type="Label" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 211.0
-offset_right = 368.0
-offset_bottom = 243.0
-theme_type_variation = &"PartyLabelMicro"
-text = "4 位玩家 · 最多支持 8 人"
-
-
-[node name="Players" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 264.0
-offset_right = 368.0
-offset_bottom = 996.0
+[node name="Rows" type="VBoxContainer" parent="Leaderboard/Body/Margin"]
+layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Player1" parent="Players" instance=ExtResource("player")]
+[node name="Empty" type="Label" parent="Leaderboard/Body/Margin/Rows"]
 layout_mode = 2
-visible = true
-
-[node name="Player2" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = true
-
-[node name="Player3" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = true
-
-[node name="Player4" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = true
-
-[node name="Player5" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = false
-
-[node name="Player6" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = false
-
-[node name="Player7" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = false
-
-[node name="Player8" parent="Players" instance=ExtResource("player")]
-layout_mode = 2
-visible = false
-
-[node name="Board" type="Control" parent="."]
-layout_mode = 0
-offset_left = 400.0
-offset_top = 178.0
-offset_right = 1488.0
-offset_bottom = 976.0
-
-
-[node name="Tile00" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 687.0
-offset_right = 1084.8
-offset_bottom = 795.0
-tile_id = 0
-property_name = "起点"
-price_text = "领取奖励"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile01" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 780.0
-offset_top = 687.0
-offset_right = 929.4
-offset_bottom = 795.0
-tile_id = 1
-property_name = "蓝湾大道"
-price_text = "$ 900"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile02" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 624.6
-offset_top = 687.0
-offset_right = 774.0
-offset_bottom = 795.0
-tile_id = 2
-property_name = "海风书店"
-price_text = "$ 1000"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile03" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 469.2
-offset_top = 687.0
-offset_right = 618.6
-offset_bottom = 795.0
-tile_id = 3
-property_name = "机会"
-price_text = "特殊地块"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile04" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 313.8
-offset_top = 687.0
-offset_right = 463.2
-offset_bottom = 795.0
-tile_id = 4
-property_name = "珊瑚码头"
-price_text = "$ 1200"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile05" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 158.4
-offset_top = 687.0
-offset_right = 307.8
-offset_bottom = 795.0
-tile_id = 5
-property_name = "中央车站"
-price_text = "特殊地块"
-district_color = Color(0.278, 0.549, 0.749, 1)
-
-[node name="Tile06" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 687.0
-offset_right = 152.4
-offset_bottom = 795.0
-tile_id = 6
-property_name = "假日公园"
-price_text = "特殊地块"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile07" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 573.0
-offset_right = 152.4
-offset_bottom = 681.0
-tile_id = 7
-property_name = "银杏花园"
-price_text = "$ 1500"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile08" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 459.0
-offset_right = 152.4
-offset_bottom = 567.0
-tile_id = 8
-property_name = "星光影院"
-price_text = "$ 1600"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile09" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 345.0
-offset_right = 152.4
-offset_bottom = 453.0
-tile_id = 9
-property_name = "命运"
-price_text = "特殊地块"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile10" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 231.0
-offset_right = 152.4
-offset_bottom = 339.0
-tile_id = 10
-property_name = "月亮广场"
-price_text = "$ 1800"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile11" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 117.0
-offset_right = 152.4
-offset_bottom = 225.0
-tile_id = 11
-property_name = "海港酒店"
-price_text = "$ 1900"
-district_color = Color(0.357, 0.620, 0.608, 1)
-
-[node name="Tile12" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = 152.4
-offset_bottom = 111.0
-tile_id = 12
-property_name = "免费休息"
-price_text = "特殊地块"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile13" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 158.4
-offset_top = 3.0
-offset_right = 307.8
-offset_bottom = 111.0
-tile_id = 13
-property_name = "云端公寓"
-price_text = "$ 2100"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile14" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 313.8
-offset_top = 3.0
-offset_right = 463.2
-offset_bottom = 111.0
-tile_id = 14
-property_name = "山顶别墅"
-price_text = "$ 2200"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile15" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 469.2
-offset_top = 3.0
-offset_right = 618.6
-offset_bottom = 111.0
-tile_id = 15
-property_name = "机会"
-price_text = "特殊地块"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile16" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 624.6
-offset_top = 3.0
-offset_right = 774.0
-offset_bottom = 111.0
-tile_id = 16
-property_name = "科技园区"
-price_text = "$ 2400"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile17" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 780.0
-offset_top = 3.0
-offset_right = 929.4
-offset_bottom = 111.0
-tile_id = 17
-property_name = "机场快线"
-price_text = "特殊地块"
-district_color = Color(0.741, 0.569, 0.384, 1)
-
-[node name="Tile18" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 3.0
-offset_right = 1084.8
-offset_bottom = 111.0
-tile_id = 18
-property_name = "旅行驿站"
-price_text = "特殊地块"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="Tile19" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 117.0
-offset_right = 1084.8
-offset_bottom = 225.0
-tile_id = 19
-property_name = "晨曦咖啡"
-price_text = "$ 2700"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="Tile20" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 231.0
-offset_right = 1084.8
-offset_bottom = 339.0
-tile_id = 20
-property_name = "艺术街区"
-price_text = "$ 2800"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="Tile21" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 345.0
-offset_right = 1084.8
-offset_bottom = 453.0
-tile_id = 21
-property_name = "城市税"
-price_text = "特殊地块"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="Tile22" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 459.0
-offset_right = 1084.8
-offset_bottom = 567.0
-tile_id = 22
-property_name = "滨海乐园"
-price_text = "$ 3000"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="Tile23" parent="Board" instance=ExtResource("tile")]
-layout_mode = 0
-offset_left = 935.4
-offset_top = 573.0
-offset_right = 1084.8
-offset_bottom = 681.0
-tile_id = 23
-property_name = "灯塔小径"
-price_text = "$ 3100"
-district_color = Color(0.549, 0.518, 0.718, 1)
-
-[node name="MapName" type="Label" parent="Board"]
-layout_mode = 0
-offset_left = 180.0
-offset_top = 146.0
-offset_right = 910.0
-offset_bottom = 190.0
-theme_type_variation = &"PartyLabelSection"
-text = "蓝湾群岛"
-horizontal_alignment = 1
-
-[node name="MapCaption" type="Label" parent="Board"]
-layout_mode = 0
-offset_left = 180.0
-offset_top = 193.0
-offset_right = 910.0
-offset_bottom = 229.0
-theme_type_variation = &"PartyLabelNote"
-text = "沿着海岸，建起你的城市。"
-horizontal_alignment = 1
-
-[node name="City" type="TextureRect" parent="Board"]
-layout_mode = 0
-offset_left = 185.0
-offset_top = 250.0
-offset_right = 905.0
-offset_bottom = 500.0
 mouse_filter = 2
-texture = ExtResource("city")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TurnTitle" type="Label" parent="Board"]
-layout_mode = 0
-offset_left = 185.0
-offset_top = 518.0
-offset_right = 905.0
-offset_bottom = 572.0
-theme_type_variation = &"PartyLabelCompactTitle"
-text = "蓝莓的回合"
-horizontal_alignment = 1
-
-[node name="TurnHint" type="Label" parent="Board"]
-layout_mode = 0
-offset_left = 185.0
-offset_top = 584.0
-offset_right = 905.0
-offset_bottom = 626.0
 theme_type_variation = &"PartyLabelNote"
-text = "掷出骰子，开启下一段旅程"
-horizontal_alignment = 1
-
-[node name="BoardHint" type="Label" parent="Board"]
-layout_mode = 0
-offset_left = 185.0
-offset_top = 639.0
-offset_right = 905.0
-offset_bottom = 671.0
-theme_type_variation = &"PartyLabelMicro"
-text = "点击外围地块，查看地产详情"
-horizontal_alignment = 1
-
-[node name="ActionTitle" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 165.0
-offset_right = 1872.0
-offset_bottom = 209.0
-theme_type_variation = &"PartyLabelSection"
-text = "本回合"
+text = "暂无排行"
 
 
-[node name="TurnPanel" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 230.0
-offset_right = 1872.0
-offset_bottom = 546.0
+[node name="Inventory" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -390.0
+offset_right = 452.0
+offset_bottom = -32.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Body" type="PanelContainer" parent="Inventory"]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_styles/panel = ExtResource("card")
 
-[node name="Phase" type="Label" parent="TurnPanel"]
-layout_mode = 0
-offset_left = 22.0
-offset_top = 18.0
-offset_right = 330.0
-offset_bottom = 54.0
+[node name="Margin" type="MarginContainer" parent="Inventory/Body"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Scroll" type="ScrollContainer" parent="Inventory/Body/Margin"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Items" type="VBoxContainer" parent="Inventory/Body/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Empty" type="Label" parent="Inventory/Body/Margin/Scroll/Items"]
+layout_mode = 2
+mouse_filter = 2
 theme_type_variation = &"PartyLabelNote"
-text = "等待掷骰"
+text = "背包是空的"
 
 
-[node name="Dice" type="Label" parent="TurnPanel"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 57.0
-offset_right = 330.0
-offset_bottom = 155.0
-theme_type_variation = &"PartyLabelBrand"
-text = "—  +  —"
-horizontal_alignment = 1
+[node name="Toggle" type="Button" parent="Inventory"]
+layout_mode = 2
+custom_minimum_size = Vector2(420, 64)
+theme_type_variation = &"PartyButtonSetting"
+text = "道具背包  ·  0  ▾"
 
-[node name="RollResult" type="Label" parent="TurnPanel"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 158.0
-offset_right = 332.0
-offset_bottom = 193.0
+[node name="Actions" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -392.0
+offset_right = -32.0
+offset_top = -390.0
+offset_bottom = -32.0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Scroll" type="ScrollContainer" parent="Actions"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Options" type="VBoxContainer" parent="Actions/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Hint" type="Label" parent="Actions"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"PartyLabelNote"
+text = "等待游戏状态"
+theme_override_styles/normal = ExtResource("hint")
 theme_type_variation = &"PartyLabelMicro"
-text = "两枚骰子 · 2–12 步"
-horizontal_alignment = 1
+text_overrun_behavior = 3
 
-[node name="Roll" type="Button" parent="TurnPanel"]
-layout_mode = 0
-offset_left = 22.0
-offset_top = 214.0
-offset_right = 330.0
-offset_bottom = 286.0
+[node name="Roll" type="Button" parent="Actions"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 78)
+theme_type_variation = &"PartyButtonSettingPrimary"
 text = "掷骰子"
-theme_type_variation = &"PartyButtonSettingPrimary"
+disabled = true
 
-[node name="ItemsTitle" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 578.0
-offset_right = 1872.0
-offset_bottom = 620.0
-theme_type_variation = &"PartyLabelSection"
-text = "我的道具"
-
-
-[node name="Item0" type="Button" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 638.0
-offset_right = 1872.0
-offset_bottom = 704.0
-text = "01   遥控骰子     × 1"
-theme_type_variation = &"PartyButtonSetting"
-
-[node name="Item1" type="Button" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 716.0
-offset_right = 1872.0
-offset_bottom = 782.0
-text = "02   租金护盾     × 2"
-theme_type_variation = &"PartyButtonSetting"
-
-[node name="ItemHint" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 790.0
-offset_right = 1872.0
-offset_bottom = 858.0
-theme_type_variation = &"PartyLabelMicro"
-text = "选择道具查看说明"
-autowrap_mode = 2
-
-[node name="EndTurn" type="Button" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 876.0
-offset_right = 1872.0
-offset_bottom = 944.0
-text = "结束回合 →"
-theme_type_variation = &"PartyButtonSetting"
-
-[node name="DemoNote" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1520.0
-offset_top = 951.0
-offset_right = 1872.0
-offset_bottom = 996.0
-theme_type_variation = &"PartyLabelMicro"
-text = "MOCK · 不结算真实资产"
-
-
-[node name="Activity" type="Label" parent="."]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 1010.0
-offset_right = 1248.0
-offset_bottom = 1048.0
-theme_type_variation = &"PartyLabelMeta"
-text = "城市快讯  /  欢迎来到蓝湾，轮到蓝莓行动。"
-
-
-[node name="RollPrompt" parent="." instance=ExtResource("prompt")]
-layout_mode = 0
-offset_left = 1300.0
-offset_top = 1010.0
-keycodes = PackedInt64Array(32)
-function_text = "掷骰"
-icon_height = 32.0
-
-[node name="ClosePrompt" parent="." instance=ExtResource("prompt")]
-layout_mode = 0
-offset_left = 1510.0
-offset_top = 1010.0
-keycodes = PackedInt64Array(4194305)
-function_text = "关闭详情"
-icon_height = 32.0
-
-[node name="Modal" type="Control" parent="."]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1920.0
-offset_bottom = 1080.0
-visible = false
-mouse_filter = 0
-
-[node name="Shade" type="ColorRect" parent="Modal"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1920.0
-offset_bottom = 1080.0
-script = ExtResource("color")
-color_role = "modal_overlay"
-
-[node name="Dialog" type="Panel" parent="Modal"]
-layout_mode = 0
-offset_left = 620.0
-offset_top = 262.0
-offset_right = 1300.0
-offset_bottom = 820.0
-theme_override_styles/panel = ExtResource("card")
-
-[node name="Tag" type="Label" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 30.0
-offset_right = 640.0
-offset_bottom = 62.0
-theme_type_variation = &"PartyLabelMeta"
-text = "地产档案 / PROPERTY"
-
-
-[node name="Name" type="Label" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 80.0
-offset_right = 640.0
-offset_bottom = 152.0
-theme_type_variation = &"PartyLabelPageTitle"
-text = "蓝湾大道"
-
-
-[node name="District" type="Label" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 167.0
-offset_right = 640.0
-offset_bottom = 203.0
-theme_type_variation = &"PartyLabelNote"
-text = "蓝湾海岸 · 可购买地产"
-
-
-[node name="Details" type="Label" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 233.0
-offset_right = 640.0
-offset_bottom = 403.0
-theme_type_variation = &"PartyLabelSetting"
-text = "地价    $ 1,200
-基础租金    $ 120
-持有者    暂无"
-
-
-[node name="Notice" type="Label" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 402.0
-offset_right = 640.0
-offset_bottom = 434.0
-theme_type_variation = &"PartyLabelMicro"
-text = "仅展示模拟信息；购买与交易由游戏逻辑接入。"
-
-
-[node name="Close" type="Button" parent="Modal/Dialog"]
-layout_mode = 0
-offset_left = 40.0
-offset_top = 469.0
-offset_right = 640.0
-offset_bottom = 529.0
-text = "返回棋盘"
-theme_type_variation = &"PartyButtonSettingPrimary"
+[node name="EventModal" parent="." instance=ExtResource("event")]
+layout_mode = 1

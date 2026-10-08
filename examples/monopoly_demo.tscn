@@ -1,14 +1,72 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=10 format=3]
 [ext_resource type="Script" path="res://examples/monopoly_demo.gd" id="script"]
-[ext_resource type="PackedScene" path="res://ui/pages/monopoly_game.tscn" id="page"]
+[ext_resource type="PackedScene" path="res://ui/pages/monopoly_overlay.tscn" id="overlay"]
 [ext_resource type="Script" path="res://examples/monopoly_demo_driver.gd" id="driver"]
-[node name="MonopolyDemo" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+[ext_resource type="StyleBox" path="res://ui/theme/monopoly_option_normal.tres" id="hint"]
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0.22, 0.36, 0.47, 1)
+sky_horizon_color = Color(0.74, 0.81, 0.84, 1)
+ground_bottom_color = Color(0.38, 0.46, 0.48, 1)
+ground_horizon_color = Color(0.74, 0.81, 0.84, 1)
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+ambient_light_color = Color(0.75, 0.82, 0.87, 1)
+ambient_light_energy = 0.7
+[sub_resource type="PlaneMesh" id="ground"]
+size = Vector2(200, 200)
+[node name="MonopolyHUDDemo" type="Node3D"]
 script = ExtResource("script")
-[node name="Page" parent="." instance=ExtResource("page")]
-layout_mode = 1
+[node name="SampleBackgroundOnly" type="Node3D" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="SampleBackgroundOnly"]
+environment = SubResource("environment")
+[node name="Ground" type="MeshInstance3D" parent="SampleBackgroundOnly"]
+mesh = SubResource("ground")
+[node name="Camera" type="Camera3D" parent="SampleBackgroundOnly"]
+position = Vector3(0, 5, 14)
+rotation_degrees = Vector3(-12, 0, 0)
+current = true
+[node name="Sun" type="DirectionalLight3D" parent="SampleBackgroundOnly"]
+rotation_degrees = Vector3(-45, -30, 0)
+light_color = Color(0.8, 0.87, 0.95, 1)
+[node name="Overlay" parent="." instance=ExtResource("overlay")]
 [node name="Driver" type="Node" parent="."]
 script = ExtResource("driver")
+[node name="DemoUI" type="CanvasLayer" parent="."]
+layer = 21
+[node name="Controls" type="HBoxContainer" parent="DemoUI"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 530.0
+offset_top = 32.0
+offset_right = -430.0
+mouse_filter = 2
+theme = ExtResource("theme")
+theme_override_constants/separation = 10
+[node name="Note" type="Label" parent="DemoUI/Controls"]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"PartyLabelMicro"
+theme_override_styles/normal = ExtResource("hint")
+text = "本地 UI 示例\n全幅 3D 背景占位"
+[node name="Spacer" type="Control" parent="DemoUI/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+[node name="Event" type="Button" parent="DemoUI/Controls"]
+layout_mode = 2
+theme_type_variation = &"PartyButtonSetting"
+text = "预览事件"
+[node name="Reset" type="Button" parent="DemoUI/Controls"]
+layout_mode = 2
+theme_type_variation = &"PartyButtonSetting"
+text = "重置"
+[node name="Back" type="Button" parent="DemoUI/Controls"]
+layout_mode = 2
+theme_type_variation = &"PartyButtonSetting"
+text = "返回"

@@ -24,11 +24,11 @@
 
 复用 `ui/components/input_prompt.tscn`，可在 Inspector 编辑按键、功能、尺寸，也可传入组合键、InputEvent 或 InputMap 动作。支持备选键 / 按键序列、未知键文字回退、主题 / 字体实时更新及 4× SVG 高 DPI 导入；不修改绑定捕获系统。来源和原始许可在 `assets/input_prompts/`，API 与手柄扩展见 [`docs/INPUT_PROMPTS.zh-CN.md`](docs/INPUT_PROMPTS.zh-CN.md)。
 
-## 大富翁棋盘 UI（独立示例）
+## 大富翁悬浮交互 HUD（独立示例）
 
-新增蓝色系“蓝湾大富翁”原生棋盘界面：中央 24 格棋盘、左侧最多八位玩家资产、右侧骰子与道具、地产信息弹层。布局与组件均为可编辑 `.tscn`，默认四人，支持八人展示。原有默认主菜单、房间与设置保持原流程。
+为已有全幅 3D 场景提供透明 CanvasLayer UI：当前金钱 / 钻石、最多八人可折叠排行榜、道具背包、行动选项、掷骰按钮和随机事件弹窗。中心保持空白；棋盘与骰子均由外部 3D 场景负责，UI 不显示骰面、不模拟点数、移动或经济。全部布局与组件可在 `.tscn` 编辑，沿用共享蓝色主题。
 
-打开 `examples/monopoly_demo.tscn` 按 F6，或运行 `godot --path . res://examples/monopoly_demo.tscn`；附加 `-- --eight-players` 查看八人版本。Space 掷骰、点击地产查看、Esc 关闭详情、F12 保存真实视口。骰子和回合由独立确定性本地驱动器演示；资金、租金、道具效果均不进行真实结算。可编辑结构、快照 API、请求信号与测试见 [`docs/MONOPOLY_UI.zh-CN.md`](docs/MONOPOLY_UI.zh-CN.md)。
+打开 `examples/monopoly_demo.tscn` 按 F6，或 `godot --path . res://examples/monopoly_demo.tscn`；附加 `-- --eight-players` 查看八人排行。独立示例以极简全幅 3D 天空 / 地面演示浮层，有明确的本地示例控制器及事件预览按钮。F12 保存真实视口。正式接入使用 `ui/pages/monopoly_overlay.tscn` 的 `HUD`，或将 `monopoly_game.tscn` 放入已有 CanvasLayer。原有默认主菜单、房间、设置不变。完整数据 / 信号 / 模态输入接入与测试见 [`docs/MONOPOLY_UI.zh-CN.md`](docs/MONOPOLY_UI.zh-CN.md)。
 
 ## 通用设置页（本轮新增）
 

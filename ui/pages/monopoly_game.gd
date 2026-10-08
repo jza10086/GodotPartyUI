@@ -1,136 +1,294 @@
 extends Control
-## Presentation layer. Requests are signals; authoritative state belongs to the caller.
+## Transparent presentation only. The external game owns dice, rules and every value.
 signal roll_requested
-signal end_turn_requested
-signal item_requested(item_index: int)
-signal property_selected(tile_id: int)
-signal back_requested
-const MAX_PLAYERS := 8
-const TILE_COUNT := 24
+signal item_requested(item_id: String)
+signal action_requested(action_id: String)
+signal event_choice_requested(event_id: String, choice_id: String)
+signal event_dismissed(event_id: String, reason: String)
+signal modal_visibility_changed(open: bool)
+const OPTION = preload("res://ui/components/monopoly_option.tscn")
+const RANK = preload("res://ui/components/monopoly_rank_row.tscn")
+const DEFAULTS := {"money": 0, "diamonds": 0, "leaderboard": [], "inventory": [], "actions": [], "roll_enabled": false, "roll_hint": "等待游戏状态", "status": ""}
+const EVENT_CONTENT := "EventModal/Center/Dialog/Margin/Content"
 var last_error := ""
-var _snapshot: Dictionary = {}
-var _focus_before_modal: Control
+var _snapshot: Dictionary = DEFAULTS.duplicate(true)
+var _event: Dictionary = {}
+var _event_generation := 0
+var _roll_pending := false
+var _item_pending := {}
+var _action_pending := {}
+var _choice_pending := false
+var _focus_before_modal: WeakRef
+var _ranks_open := true
+var _inventory_open := true
 
 func _ready() -> void:
-	$Back.pressed.connect(func(): back_requested.emit())
-	$TurnPanel/Roll.pressed.connect(request_roll)
-	$EndTurn.pressed.connect(request_end_turn)
-	$Item0.pressed.connect(func(): request_item(0))
-	$Item1.pressed.connect(func(): request_item(1))
-	$Modal/Dialog/Close.pressed.connect(close_property)
-	$Modal/Dialog/Close.focus_next = NodePath(".")
-	$Modal/Dialog/Close.focus_previous = NodePath(".")
-	for tile in _tiles(): tile.pressed.connect(show_property.bind(tile.tile_id))
-	if not _snapshot.is_empty(): _render()
+	$Actions/Roll.pressed.connect(request_roll)
+	$Leaderboard/Toggle.pressed.connect(func(): set_leaderboard_open(not _ranks_open))
+	$Inventory/Toggle.pressed.connect(func(): set_inventory_open(not _inventory_open))
+	get_node(EVENT_CONTENT + "/Close").pressed.connect(close_event)
+	_render()
+	if not _event.is_empty(): _render_event()
 
-## Atomic validation: malformed state never partially replaces the current UI.
-## Players require a stable unique id, display name, nonnegative cash/properties and a 0..23 position.
-func set_snapshot(state: Dictionary) -> bool:
-	last_error = ""
-	var players: Variant = state.get("players", [])
-	if not players is Array or players.size() < 1 or players.size() > MAX_PLAYERS:
-		return _reject("玩家数量必须为 1–8。")
-	var ids := {}
-	for player in players:
-		if not player is Dictionary: return _reject("玩家数据必须为 Dictionary。")
-		var id := str(player.get("id", ""))
-		if id.is_empty() or ids.has(id): return _reject("玩家 ID 不能为空或重复。")
-		ids[id] = true
-		if player.has("color") and not player.color is Color: return _reject("玩家颜色必须为 Color。")
-		for field in ["cash", "properties", "position"]:
-			if not player.get(field) is int or player[field] < 0: return _reject("玩家数值必须为非负整数。")
-		if player.position >= TILE_COUNT: return _reject("地块位置超出范围。")
-	if not state.get("active") is int or state.active < 0 or state.active >= players.size():
-		return _reject("当前玩家索引无效。")
-	for field in ["rolled", "can_act"]:
-		if state.has(field) and not state[field] is bool: return _reject("行动标记必须为布尔值。")
-	if state.has("round") and (not state.round is int or state.round < 1): return _reject("回合数必须为正整数。")
-	_snapshot = state.duplicate(true)
-	if is_node_ready(): _render()
-	return true
-
-func get_snapshot() -> Dictionary: return _snapshot.duplicate(true)
 func _reject(message: String) -> bool:
 	last_error = message
 	return false
 
-func _tiles() -> Array:
-	return $Board.get_children().filter(func(child): return child is Button)
+func _valid_entries(entries: Variant, kind: String, limit: int) -> bool:
+	if not entries is Array or entries.size() > limit: return _reject(kind + " 数量或类型无效。")
+	var ids := {}
+	for entry in entries:
+		if not entry is Dictionary: return _reject(kind + " 必须为 Dictionary。")
+		if not entry.get("id") is String or entry.id.strip_edges().is_empty() or ids.has(entry.id): return _reject(kind + " ID 必须为唯一非空字符串。")
+		ids[entry.id] = true
+		var text_key := "name" if kind in ["leaderboard", "inventory"] else "label"
+		if not entry.get(text_key) is String: return _reject(kind + " 缺少文案字符串。")
+		for key in ["enabled", "is_self"]:
+			if entry.has(key) and not entry[key] is bool: return _reject(key + " 必须为 bool。")
+		for key in ["reason", "description"]:
+			if entry.has(key) and not entry[key] is String: return _reject(key + " 必须为 String。")
+		if kind == "leaderboard" and not entry.get("value") is String: return _reject("排行 value 必须为展示字符串。")
+		if kind == "inventory" and (not entry.get("count") is int or entry.count < 0): return _reject("道具 count 必须为非负整数。")
+	return true
 
+## Full replacement. Omitted fields take safe defaults; failures are atomic.
+func set_snapshot(state: Dictionary) -> bool:
+	last_error = ""
+	var next := DEFAULTS.duplicate(true)
+	next.merge(state, true)
+	for key in ["money", "diamonds"]:
+		if not next[key] is int or next[key] < 0: return _reject(key + " 必须为非负整数。")
+	if not next.roll_enabled is bool: return _reject("roll_enabled 必须为 bool。")
+	for key in ["roll_hint", "status"]:
+		if not next[key] is String: return _reject(key + " 必须为 String。")
+	if not _valid_entries(next.leaderboard, "leaderboard", 8): return false
+	if not _valid_entries(next.inventory, "inventory", 128): return false
+	if not _valid_entries(next.actions, "actions", 32): return false
+	_snapshot = next.duplicate(true)
+	_roll_pending = false
+	_item_pending.clear()
+	_action_pending.clear()
+	if is_node_ready(): _render()
+	return true
+
+func get_snapshot() -> Dictionary: return _snapshot.duplicate(true)
+func get_event() -> Dictionary: return _event.duplicate(true)
+func _patch(patch: Dictionary, reset: String = "") -> bool:
+	var pending_roll := _roll_pending
+	var pending_items := _item_pending.duplicate()
+	var pending_actions := _action_pending.duplicate()
+	var next := get_snapshot()
+	next.merge(patch, true)
+	if not set_snapshot(next): return false
+	if reset != "roll": _roll_pending = pending_roll
+	if reset != "inventory": _item_pending = pending_items
+	if reset != "actions": _action_pending = pending_actions
+	if is_node_ready(): _update_enabled()
+	return true
+func set_wallet(money: int, diamonds: int) -> bool: return _patch({"money": money, "diamonds": diamonds})
+func set_leaderboard(entries: Array) -> bool: return _patch({"leaderboard": entries})
+func set_inventory(entries: Array) -> bool: return _patch({"inventory": entries}, "inventory")
+func set_actions(entries: Array) -> bool: return _patch({"actions": entries}, "actions")
+func set_roll_enabled(enabled: bool, hint: String = "") -> bool: return _patch({"roll_enabled": enabled, "roll_hint": hint}, "roll")
+func set_status(text: String) -> bool: return _patch({"status": text})
+
+func _clear_rows(container: Node) -> void:
+	for child in container.get_children():
+		container.remove_child(child)
+		child.queue_free()
+func _format_number(value: int) -> String:
+	var digits := str(value)
+	var result := ""
+	for i in digits.length():
+		if i > 0 and (digits.length() - i) % 3 == 0: result += ","
+		result += digits[i]
+	return result
+func _label(node: Label, value: String) -> void:
+	node.text = value
+	node.tooltip_text = value
 func _render() -> void:
-	var players: Array = _snapshot.players
-	var active: int = _snapshot.active
-	for i in MAX_PLAYERS:
-		var card: Control = $Players.get_child(i)
-		card.visible = i < players.size()
-		if card.visible: card.configure(players[i], i, i == active)
-	$PlayerCount.text = "%d 位玩家 · 最多支持 8 人" % players.size()
-	$Round.text = "第 %02d / 12 回合" % int(_snapshot.get("round", 1))
-	$Board/TurnTitle.text = str(players[active].get("name", "玩家")) + "的回合"
-	$Board/TurnTitle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	$Board/TurnTitle.tooltip_text = $Board/TurnTitle.text
-	$Board/TurnHint.text = str(_snapshot.get("hint", "掷出骰子，开启下一段旅程"))
-	$TurnPanel/Phase.text = "可结束回合" if _snapshot.get("rolled", false) else "等待掷骰"
-	$TurnPanel/Dice.text = str(_snapshot.get("dice_text", "—  +  —"))
-	$TurnPanel/RollResult.text = str(_snapshot.get("result", "两枚骰子 · 2–12 步"))
-	$ItemHint.text = str(_snapshot.get("item_hint", "选择道具查看说明"))
-	$Activity.text = "城市快讯  /  " + str(_snapshot.get("activity", "欢迎来到蓝湾。"))
-	$Activity.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	$Activity.tooltip_text = $Activity.text
-	for tile in _tiles():
-		var occupants := []
-		for i in players.size():
-			if players[i].position == tile.tile_id: occupants.append(i)
-		tile.set_occupants(occupants)
-	_update_actions()
-
-func _update_actions() -> void:
-	var blocked: bool = $Modal.visible or _snapshot.is_empty() or not _snapshot.get("can_act", false)
-	var rolled: bool = _snapshot.get("rolled", false)
-	$TurnPanel/Roll.disabled = blocked or rolled
-	$EndTurn.disabled = blocked or not rolled
-	$Item0.disabled = blocked or rolled
-	$Item1.disabled = blocked or rolled
-	$Back.disabled = $Modal.visible
-	for tile in _tiles(): tile.disabled = $Modal.visible
-
+	_label($Wallet/Margin/Values/Money/Value, _format_number(_snapshot.money))
+	_label($Wallet/Margin/Values/Diamonds/Value, _format_number(_snapshot.diamonds))
+	var ranks := $Leaderboard/Body/Margin/Rows
+	_clear_rows(ranks)
+	for i in _snapshot.leaderboard.size():
+		var entry: Dictionary = _snapshot.leaderboard[i]
+		var row = RANK.instantiate()
+		ranks.add_child(row)
+		_label(row.get_node("Margin/Row/Rank"), "%02d" % (i + 1))
+		_label(row.get_node("Margin/Row/Name"), entry.name + (" · 我" if entry.get("is_self", false) else ""))
+		_label(row.get_node("Margin/Row/Value"), entry.value)
+	if _snapshot.leaderboard.is_empty(): _empty(ranks, "暂无排行")
+	var inventory := $Inventory/Body/Margin/Scroll/Items
+	_clear_rows(inventory)
+	for entry in _snapshot.inventory:
+		var button := _option(inventory, entry, entry.name + "  × " + str(entry.count))
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.autowrap_mode = TextServer.AUTOWRAP_OFF
+		button.pressed.connect(request_item.bind(entry.id))
+	if _snapshot.inventory.is_empty(): _empty(inventory, "背包是空的")
+	var options := $Actions/Scroll/Options
+	_clear_rows(options)
+	for entry in _snapshot.actions:
+		var button := _option(options, entry, entry.label)
+		button.pressed.connect(request_action.bind(entry.id))
+	_label($Actions/Hint, _snapshot.roll_hint if _snapshot.status.is_empty() else _snapshot.status)
+	_update_enabled()
+	set_inventory_open(_inventory_open)
+	set_leaderboard_open(_ranks_open)
+func _empty(parent: Node, value: String) -> void:
+	var text := Label.new()
+	text.text = value
+	text.theme_type_variation = &"PartyLabelNote"
+	text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(text)
+func _option(parent: Node, entry: Dictionary, title: String) -> Button:
+	var button: Button = OPTION.instantiate()
+	button.text = title
+	button.tooltip_text = title
+	for key in ["description", "reason"]:
+		if not str(entry.get(key, "")).is_empty(): button.tooltip_text += "\n" + entry[key]
+	button.set_meta("stable_id", entry.id)
+	parent.add_child(button)
+	return button
+func set_inventory_open(open: bool) -> void:
+	_inventory_open = open
+	if not is_node_ready(): return
+	$Inventory/Body.visible = open
+	$Inventory.offset_top = -390.0 if open else -96.0
+	$Inventory/Toggle.text = "道具背包  ·  %d  %s" % [_snapshot.inventory.size(), "▾" if open else "▴"]
+func set_leaderboard_open(open: bool) -> void:
+	_ranks_open = open
+	if not is_node_ready(): return
+	$Leaderboard/Body.visible = open
+	$Leaderboard/Toggle.text = "排行榜  ·  %d 人  %s" % [_snapshot.leaderboard.size(), "▾" if open else "▸"]
+func _update_enabled() -> void:
+	var blocked := is_modal_open()
+	$Actions/Roll.disabled = blocked or _roll_pending or not _snapshot.roll_enabled
+	$Actions/Roll.tooltip_text = "请求已发送，等待游戏确认" if _roll_pending else _snapshot.roll_hint
+	$Leaderboard/Toggle.disabled = blocked
+	$Inventory/Toggle.disabled = blocked
+	for pair in [["Inventory/Body/Margin/Scroll/Items", _snapshot.inventory, _item_pending], ["Actions/Scroll/Options", _snapshot.actions, _action_pending]]:
+		for button in get_node(pair[0]).get_children():
+			if not button is Button: continue
+			for entry in pair[1]:
+				if entry.id == button.get_meta("stable_id"):
+					button.disabled = blocked or pair[2].has(entry.id) or not entry.get("enabled", true) or entry.get("count", 1) == 0
 func request_roll() -> void:
-	if not $TurnPanel/Roll.disabled: roll_requested.emit()
-func request_end_turn() -> void:
-	if not $EndTurn.disabled: end_turn_requested.emit()
-func request_item(index: int) -> void:
-	if index in [0, 1] and not $Item0.disabled: item_requested.emit(index)
+	if not is_node_ready() or not is_visible_in_tree() or is_modal_open() or _roll_pending or not _snapshot.roll_enabled: return
+	_roll_pending = true
+	_update_enabled()
+	roll_requested.emit()
+func request_item(id: String) -> void: _request_entry(id, "inventory")
+func request_action(id: String) -> void: _request_entry(id, "actions")
+func _request_entry(id: String, kind: String) -> void:
+	if not is_node_ready() or not is_visible_in_tree() or is_modal_open(): return
+	var pending: Dictionary = _item_pending if kind == "inventory" else _action_pending
+	if pending.has(id): return
+	for entry in _snapshot[kind]:
+		if entry.id != id: continue
+		if not entry.get("enabled", true) or entry.get("count", 1) == 0: return
+		pending[id] = true
+		_update_enabled()
+		if kind == "inventory": item_requested.emit(id)
+		else: action_requested.emit(id)
+		return
 
-func show_property(tile_id: int) -> void:
-	if $Modal.visible or tile_id < 0 or tile_id >= TILE_COUNT: return
-	var tile: Button = $Board.get_node("Tile%02d" % tile_id)
-	_focus_before_modal = get_viewport().gui_get_focus_owner()
-	if _focus_before_modal == null: _focus_before_modal = tile
-	$Modal/Dialog/Name.text = tile.property_name
-	var special: bool = not tile.price_text.begins_with("$")
-	$Modal/Dialog/District.text = "城市事件 · 特殊地块" if special else "蓝湾城市 · 地产信息示例"
-	var value := 800 + tile_id * 100
-	$Modal/Dialog/Details.text = ("类型    %s\n效果    由玩法逻辑接入\n状态    本地 UI 预览" % tile.price_text) if special else ("地价    $ %d\n基础租金    $ %d\n持有者    暂无（示例）" % [value, value / 10])
-	$Modal.show()
-	_update_actions()
-	$Modal/Dialog/Close.grab_focus()
-	property_selected.emit(tile_id)
-
-func close_property() -> void:
-	if not $Modal.visible: return
-	$Modal.hide()
-	_update_actions()
-	if is_instance_valid(_focus_before_modal): _focus_before_modal.grab_focus()
-
+func show_event(data: Dictionary) -> bool:
+	last_error = ""
+	for key in ["id", "title", "body"]:
+		if not data.get(key) is String: return _reject("事件 " + key + " 必须为 String。")
+	if data.id.strip_edges().is_empty(): return _reject("事件 ID 不能为空。")
+	if data.has("dismissible") and not data.dismissible is bool: return _reject("dismissible 必须为 bool。")
+	if not _valid_entries(data.get("choices", []), "choices", 32): return false
+	var was_open := is_modal_open()
+	var old_id: String = _event.get("id", "")
+	if not was_open and is_node_ready():
+		var focus := get_viewport().gui_get_focus_owner()
+		_focus_before_modal = weakref(focus) if focus else null
+	_event = data.duplicate(true)
+	_event_generation += 1
+	var generation := _event_generation
+	_choice_pending = false
+	if is_node_ready(): _render_event()
+	if not was_open: modal_visibility_changed.emit(true)
+	# Commit first. A listener may close/replace the new event safely.
+	if was_open and old_id != data.id and generation == _event_generation:
+		event_dismissed.emit(old_id, "replaced")
+	return true
+func is_modal_open() -> bool: return not _event.is_empty()
+func close_event() -> bool:
+	if not is_modal_open() or not _event.get("dismissible", true): return false
+	return _dismiss_event("closed")
+## External authoritative dismissal, including non-dismissible events.
+func dismiss_event(event_id: String) -> bool:
+	if not is_modal_open() or _event.id != event_id: return false
+	return _dismiss_event("controller")
+func _dismiss_event(reason: String) -> bool:
+	var id: String = _event.id
+	_event.clear()
+	_event_generation += 1
+	_choice_pending = false
+	if is_node_ready():
+		$EventModal.hide()
+		_update_enabled()
+		var focus: Control = _focus_before_modal.get_ref() if _focus_before_modal else null
+		_focus_before_modal = null
+		if is_instance_valid(focus) and focus.is_visible_in_tree() and (not focus is BaseButton or not focus.disabled): focus.grab_focus()
+		elif is_visible_in_tree():
+			if not $Actions/Roll.disabled: $Actions/Roll.grab_focus()
+			else: $Inventory/Toggle.grab_focus()
+	modal_visibility_changed.emit(false)
+	# Always report the completed dismissal; no UI/state writes after callbacks.
+	event_dismissed.emit(id, reason)
+	return true
+func _render_event() -> void:
+	var content := get_node(EVENT_CONTENT)
+	_label(content.get_node("Title"), _event.title)
+	_label(content.get_node("BodyScroll/Body"), _event.body)
+	var choices := content.get_node("ChoicesScroll/Choices")
+	_clear_rows(choices)
+	for entry in _event.get("choices", []):
+		var button := _option(choices, entry, entry.label)
+		button.disabled = _choice_pending or not entry.get("enabled", true)
+		button.pressed.connect(_request_choice.bind(entry.id, _event_generation))
+	content.get_node("Close").visible = _event.get("dismissible", true)
+	content.get_node("BodyScroll").scroll_vertical = 0
+	content.get_node("ChoicesScroll").scroll_vertical = 0
+	$EventModal.show()
+	_update_enabled()
+	var focusables := _modal_focusables()
+	if not focusables.is_empty(): focusables[0].grab_focus()
+func request_event_choice(id: String) -> void:
+	_request_choice(id, _event_generation)
+func _request_choice(id: String, generation: int) -> void:
+	if not is_node_ready() or not is_modal_open() or not is_visible_in_tree() or generation != _event_generation or _choice_pending: return
+	for entry in _event.get("choices", []):
+		if entry.id == id and entry.get("enabled", true):
+			_choice_pending = true
+			var event_id: String = _event.id
+			for button in get_node(EVENT_CONTENT + "/ChoicesScroll/Choices").get_children(): button.disabled = true
+			event_choice_requested.emit(event_id, id)
+			return
+func _modal_focusables() -> Array[Control]:
+	var result: Array[Control] = []
+	for button in get_node(EVENT_CONTENT + "/ChoicesScroll/Choices").get_children():
+		if button is Button and not button.disabled: result.append(button)
+	var close: Button = get_node(EVENT_CONTENT + "/Close")
+	if close.visible: result.append(close)
+	result.append(get_node(EVENT_CONTENT + "/BodyScroll"))
+	result.append(get_node(EVENT_CONTENT + "/ChoicesScroll"))
+	return result
 func _input(event: InputEvent) -> void:
-	# Space is the advertised global roll shortcut, even when an item has focus.
-	# Enter remains available for normal focused-button activation.
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE and not $Modal.visible:
-		request_roll()
-		get_viewport().set_input_as_handled()
-
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo: return
-	if event.keycode == KEY_ESCAPE and $Modal.visible:
-		close_property()
-		get_viewport().set_input_as_handled()
+	if not is_visible_in_tree() or not is_modal_open(): return
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_ESCAPE:
+			if not event.echo: close_event()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_TAB:
+			var choices := _modal_focusables()
+			var index := choices.find(get_viewport().gui_get_focus_owner())
+			choices[posmod(index + (-1 if event.shift_pressed else 1), choices.size())].grab_focus()
+			get_viewport().set_input_as_handled()
+func _unhandled_input(_event_input: InputEvent) -> void:
+	if is_visible_in_tree() and is_modal_open(): get_viewport().set_input_as_handled()
