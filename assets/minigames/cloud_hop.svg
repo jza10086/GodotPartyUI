@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 94 1280 540">
+<!-- Original geometric game preview created for GodotPartyUI. No third-party game art. -->
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#173f62"/><stop offset="1" stop-color="#5a9fcd"/></linearGradient><linearGradient id="platform" x2="0" y2="1"><stop stop-color="#e1f3ff"/><stop offset="1" stop-color="#92c5e5"/></linearGradient></defs>
+<rect width="1280" height="720" fill="url(#sky)"/>
+<circle cx="1080" cy="144" r="68" fill="#d8f3ff" opacity=".22"/>
+<g fill="#a8d3ee" opacity=".15"><ellipse cx="150" cy="165" rx="175" ry="38"/><ellipse cx="365" cy="110" rx="116" ry="24"/><ellipse cx="1070" cy="422" rx="236" ry="38"/></g>
+<g fill="#bce0f4" opacity=".3"><path d="M0 612 175 442 374 648 600 413 821 669 1054 458 1280 615V720H0Z"/></g>
+<path d="M90 535Q385 353 615 448T1110 190" fill="none" stroke="#d8f3ff" stroke-width="5" stroke-dasharray="12 17" opacity=".45"/>
+<g stroke="#214f70" stroke-width="5" stroke-linejoin="round">
+<path d="M25 515 160 452 340 491 204 556Z" fill="url(#platform)"/><path d="M25 515 204 556 340 491V535L204 600 25 558Z" fill="#478cba"/>
+<path d="M388 393 507 342 642 378 528 433Z" fill="url(#platform)"/><path d="M388 393 528 433 642 378V420L528 474 388 434Z" fill="#478cba"/>
+<path d="M673 475 793 420 918 453 800 510Z" fill="url(#platform)"/><path d="M673 475 800 510 918 453V494L800 551 673 517Z" fill="#478cba"/>
+<path d="M928 277 1066 210 1240 256 1101 327Z" fill="url(#platform)"/><path d="M928 277 1101 327 1240 256V300L1101 369 928 320Z" fill="#478cba"/>
+</g>
+<g stroke="#234866" stroke-width="5"><ellipse cx="174" cy="505" rx="48" ry="14" fill="#234866" opacity=".2"/><rect x="139" y="433" width="58" height="64" rx="22" fill="#f4bd57"/><circle cx="168" cy="427" r="29" fill="#ffdb87"/><path d="m145 489-15 18m59-19 15 14" fill="none" stroke="#f4bd57" stroke-width="14" stroke-linecap="round"/><circle cx="159" cy="425" r="3" fill="#234866"/><circle cx="178" cy="425" r="3" fill="#234866"/>
+<rect x="489" y="302" width="53" height="64" rx="21" fill="#70dbd7"/><circle cx="516" cy="294" r="27" fill="#adf0e5"/><circle cx="508" cy="294" r="3" fill="#234866"/><circle cx="524" cy="294" r="3" fill="#234866"/>
+<g transform="translate(774 313) rotate(15)"><rect x="-27" y="0" width="54" height="62" rx="21" fill="#9b98ef"/><circle cy="-10" r="27" fill="#cdc9ff"/><circle cx="-8" cy="-11" r="3" fill="#234866"/><circle cx="8" cy="-11" r="3" fill="#234866"/><path d="m-29 16-24-12m78 14 22-15" stroke="#9b98ef" stroke-width="13" stroke-linecap="round"/></g></g>
+<path d="m720 372-13 34m45-28-11 25" stroke="#d5ebff" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+<g transform="translate(1070 173)"><path d="M0-42 13-14 45-10 21 12 27 43 0 28-27 43-21 12-45-10-13-14Z" fill="#ffdb87" stroke="#dfaa4a" stroke-width="5"/><path d="M-5-9 0-24 5-9" fill="none" stroke="#fff3ca" stroke-width="5" stroke-linecap="round"/></g>
+<g fill="#edf9ff"><circle cx="407" cy="235" r="3"/><circle cx="685" cy="139" r="4"/><circle cx="894" cy="101" r="3"/><circle cx="318" cy="330" r="4"/><circle cx="1186" cy="513" r="4"/></g>
+</svg>

@@ -5,7 +5,7 @@ const ACTION_PREFIX := "party_demo_"
 static func make_tab(callback: Callable) -> Dictionary:
 	return {"id": "Bindings", "title": "按键绑定", "options": [
 		{"id": "bindings.header", "type": "bindings_header"},
-		{"id": "bindings.help", "type": "note", "text": "点击主按键或次要按键进行录入；Esc 取消，Delete / Backspace 清空。支持 Ctrl / Alt / Shift 组合键。"},
+		{"id": "bindings.help", "type": "note", "text": "点击主按键或次要按键进行录入；支持组合键，取消和清空快捷键见录入面板。"},
 		{"id": "bindings.movement", "type": "group", "label": "移动", "expanded": true, "children": [
 			binding("move_forward", "向前移动", [KEY_W, KEY_UP], callback),
 			binding("move_back", "向后移动", [KEY_S, KEY_DOWN], callback),
@@ -27,7 +27,7 @@ static func make_tab(callback: Callable) -> Dictionary:
 			binding("scoreboard", "计分板", [KEY_G, 0], callback),
 			binding("ping", "标记位置", [KEY_V, 0], callback)
 		]},
-		{"id": "bindings.footer", "type": "note", "text": "真实更新当前会话的 party_demo_* InputMap 动作；不修改 ui_*，不写入磁盘。F10 独立示例可预览动作触发。"}
+		{"id": "bindings.footer", "type": "note", "text": "真实更新当前会话的 party_demo_* InputMap 动作；不修改 ui_*，不写入磁盘。独立示例可预览动作触发与实时按键图标。"}
 	]}
 
 static func binding(action: String, label_text: String, keys: Array, callback: Callable, children: Array = []) -> Dictionary:

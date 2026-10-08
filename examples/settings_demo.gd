@@ -28,6 +28,9 @@ func _ready() -> void:
 		push_error(page.last_error)
 		return
 	DemoBindings.apply_defaults(page)
+	$Prompts.resized.connect(func(): _layout_prompt_footer.call_deferred())
+	$Prompts.minimum_size_changed.connect(func(): _layout_prompt_footer.call_deferred())
+	_layout_prompt_footer.call_deferred()
 	page.get_node("Back").text = "Rebuild / reset demo"
 	page.back_requested.connect(func():
 		if not page.configure(tabs):
@@ -81,3 +84,8 @@ func _capture_demo() -> void:
 
 func _update_preview_color() -> void:
 	$Preview.modulate = Color.WHITE if _preview_color_role.is_empty() else UI_CONFIG.get(_preview_color_role)
+
+func _layout_prompt_footer() -> void:
+	# Flow grows upward from its fixed bottom, keeping long two-slot chords
+	# on screen. The callback line follows it instead of being overlapped.
+	$Preview.position.y = $Prompts.position.y - 8.0 - $Preview.size.y

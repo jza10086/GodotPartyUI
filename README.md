@@ -18,6 +18,18 @@
 
 普通节点的 Theme Overrides 仍优先；背景/线条关闭 `Use Global Color` 后可直接改本地颜色，开关和样式也有对应局部开关。已有字号层级和可编辑场景布局保留。配置分组、编辑器预览与覆盖规则见 [`docs/THEME.zh-CN.md`](docs/THEME.zh-CN.md)。
 
+## 按键图标提示
+
+已导入 [Kenney Input Prompts](https://kenney.nl/assets/input-prompts) 1.5A 的 104 个常用键盘 / 鼠标轮廓 SVG（原图约 89KB，CC0）。主界面与各页面共享的右下角、按键录入弹层现用「图标表示按键 + 文字表示功能」；实际 Godot 版本、协议与场景信息保持文本。独立设置示例还展示随真实绑定更新的跳跃 / 交互图标。
+
+复用 `ui/components/input_prompt.tscn`，可在 Inspector 编辑按键、功能、尺寸，也可传入组合键、InputEvent 或 InputMap 动作。支持备选键 / 按键序列、未知键文字回退、主题 / 字体实时更新及 4× SVG 高 DPI 导入；不修改绑定捕获系统。来源和原始许可在 `assets/input_prompts/`，API 与手柄扩展见 [`docs/INPUT_PROMPTS.zh-CN.md`](docs/INPUT_PROMPTS.zh-CN.md)。
+
+## 大富翁悬浮交互 HUD（独立示例）
+
+为已有全幅 3D 场景提供纯悬浮透明 CanvasLayer HUD：左上横向紧凑金币 / 钻石图标与数值，左下默认收起、点击向右展开的背包图片按钮，右下可在 Inspector 替换贴图的掷骰 TextureButton，以及右侧中部常驻半透明排行榜（最多八人，每人同时显示金币 / 钻石）。事件弹窗支持数据驱动的可选插图和选项，地产购买也通过事件呈现，没有独立行动区或购买按钮。中心保持空白；棋盘与骰子均由外部 3D 场景负责，UI 不显示骰子投掷结果、不模拟点数、移动或经济。全部布局与组件可在 `.tscn` 编辑，图标位于 `assets/ui/monopoly/`，沿用共享蓝色主题。
+
+打开 `examples/monopoly_demo.tscn` 按 F6，或 `godot --path . res://examples/monopoly_demo.tscn`；附加 `-- --eight-players` 查看八人排行。独立示例以极简全幅 3D 天空 / 地面演示浮层，有明确的本地示例控制器及地产购买事件预览按钮。F12 保存真实视口到 `screenshots/21_monopoly_game.png`。正式接入使用 `ui/pages/monopoly_overlay.tscn` 的 `HUD`，或将 `monopoly_game.tscn` 放入已有 CanvasLayer。原有默认主菜单、房间、设置不变。完整数据 / 信号 / 插图资源 / 模态输入接入、旧 `actions` 与排行 `value` 迁移及测试见 [`docs/MONOPOLY_UI.zh-CN.md`](docs/MONOPOLY_UI.zh-CN.md)。
+
 ## 通用设置页（本轮新增）
 
 - 可复用场景：`settings/settings_page.tscn`，实现：`settings/settings_page.gd`
@@ -45,7 +57,7 @@
 
 ## 可点击流程
 
-- 创建房间 → 配置弹窗（12 个 MOCK 主游戏、1–24 字房间名、可选遮罩密码、公开 / 仅限好友 / 仅限邀请；取消 / Esc 不创建）→ 8 人房间（房主视角，示例 3 人占位）→ 开始游戏 → 显示未接入真实游戏的流程反馈
+- 创建房间 → 配置弹窗（12 个 MOCK 主游戏、1–24 字房间名、可选遮罩密码、公开 / 仅限好友 / 仅限邀请；取消 / Esc 不创建）→ 8 人房间（房主视角，示例 3 人占位）→ 开始游戏 → 小游戏加载 / 规则页（八人状态及准备交互，仍为 MOCK）
 - 加入房间后显示玩家视角（示例 4 人占位）；准备 / 取消准备同步更新本人行状态与准备人数
 - 房主可循环切换大游戏、地图、回合；玩家仅可查看，不能修改房主设置
 - 导入预设 → 明确标注模拟的示例预览 → 应用示例预设；导出预设 → 查看当前设置预览。两者均不读写本地文件
@@ -143,13 +155,16 @@ godot --headless --path . --script res://tests/test_scene_components.gd
 godot --headless --path . --script res://tests/test_theme_configuration.gd
 godot --headless --path . --script res://tests/test_config_inspector.gd
 godot --headless --path . --script res://tests/test_hover_states.gd
+godot --headless --path . --script res://tests/test_input_prompts.gd
 godot --headless --path . --script res://tests/test_exit.gd
 godot --path . --resolution 1920x1080 -- --capture-all
 ```
 
 本轮 iOS 胶囊开关与 Godot 蓝色主题在 **Godot 4.7.2** 上全量通过 **5591 项检查**，另通过真实退出、clean import、主界面与独立示例各 180 帧 headless smoke，无错误或警告。新增开关专项 **163 项**，覆盖 51:31 胶囊/54 px 圆滑块像素、端点及中间帧、真实点击/键盘、快速反向、禁用、RTL、重挂树、RGBA 动态配置、本地覆盖及场景保存重载；原开关 API 专项增至 **31 项**，统一主题 **1505 项**，中文 Inspector **1724 项**。headless 动态图像检查使用实际上传的 CPU 帧以避开虚拟渲染器的旧纹理读回缓存；另在真实 Godot 4.7.2 窗口验收主菜单、设置页、PopupMenu、tooltip 和两类开关：GPU 颜色/位置实时刷新，连续切换、移出悬停、键盘焦点及玩家只读禁用均正常，并保存原生 F12 截图。
 
-此前悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
+此前按键图标提示专项 **1524 项**：104 个源资产逐项检查纹理、透明边距裁切与原始 RGBA；覆盖键名别名、组合键、主 / 次空槽、物理键、鼠标与手柄 fallback、扩展多彩图标、InputMap 创建 / 重绑 / 清空 / 删除、真实设置回调、主题 / 字体 / 禁用 / 高亮与局部覆盖、可编辑场景保存重载、窄布局换行、缩放比例、被动输入与四页面状态信息。含既有回归及新增节点主题覆盖，官方 Godot 4.7.2 合计 **7135 项通过**；另通过空缓存首次 import、真实退出信号及主界面 / 独立示例 headless smoke。真实 Godot 窗口已验收主界面、录入弹层、动态双槽长组合键、实际 InputMap 触发、Meta 文字回退和 959×611 窄窗口，无提示裁切；VM 的无声卡 / VSync 支持警告属于环境限制，未出现脚本异常。
+
+悬停交互专项 **396 项**：大厅高级设置的 CheckButton 与通用 CheckBox 选中状态不再常亮整行；设置页 OptionButton 恢复悬停背景、边框、文字与箭头状态。使用真实鼠标/键盘输入覆盖进出、快速反复切换、PopupMenu 悬停/选择/禁用/重开/Esc、焦点、几何、精确回调次数、运行时 RGBA 和局部覆盖，分段开关动画沿用原回归。连同既有 4609 项，共 **5005 项通过**；另通过 import、真实退出信号与主界面/独立示例 headless smoke。headless 检查不替代真实渲染截图。
 
 中文 Inspector 专项 **1452 项**：56 个中文字段及说明、原生类型/范围/默认还原值、英文 API 双向同步、单次通知、UndoRedo、字体连接、资源深复制、旧英文键自定义值的读取及中文编辑后保存重载。连同既有 3157 项，共 **4609 项通过**；另验证 Godot 原生文档导出的全部中文属性说明。
 
@@ -174,3 +189,11 @@ godot --path . --resolution 1920x1080 -- --capture-all
 `group_details.tscn` 的 `HierarchyLine`、`BranchTemplate` 与缩进/行间距可在编辑器调整；分支通过场景模板生成。`divider.tscn` 的根节点保留布局和 API，`Stroke` 绘制裁短后的横线，不挪动任何交互区域。空子组不显示竖线；条件隐藏、动态插入、滚动与缩放都会按实际 Control 几何重新连接。几何测试不替代真实截图验收。
 
 本次直线与折叠分隔修正后（含真实窗口化示例、按钮解析后样式边距），几何专项 **1253 项**、默认分隔专项 **40 项**通过，覆盖各层首末子项、说明、展开/折叠、条件隐藏、空组、运行时插入/重建、场景线条编辑、非均匀缩放与实际滚动；连同其余 503 项，共 **1796 项通过**，另通过 import、真实退出信号与主界面/独立示例 headless smoke。
+
+## 小游戏加载 / 规则页
+
+房主大厅「开始游戏」已接入独立小游戏介绍页：顶部游戏名称、左侧八行玩家状态列表、右上原创演示图（可替换静音视频）、右下编号规则与 Kenney 操作图标，以及固定底部准备按钮。Esc 或返回保留大厅和当前准备状态。页面提供明确 MOCK 控件，加载中不能准备，不执行真实联机或玩法。
+
+可直接运行 `examples/minigame_loading_demo.tscn` 或 `godot --path . -- --minigame-demo`。组件与数据 / Callable / 信号接入详见 [小游戏加载页文档](docs/MINIGAME_LOADING.zh-CN.md)；专项回归 `tests/test_minigame_loading.gd` 与 `tests/test_minigame_video.gd`。
+
+加载页专项 950 项，覆盖固定左右结构、八行完整可见、14 条长规则独立滚动、窄组件两轴可达、窄 → 宽复位、共享大字号及固定操作不重叠。玩家列表在窄组件里也保持单列左侧布局，规则滚动不带走按键。另通过 CLI 返回 5 项、真实 Ogg/Theora 解码与动态移动按键 22 项；含既有回归共 8117 项检查通过，空缓存导入、真实退出与四入口 smoke 通过。完整回归统计见 [小游戏加载页文档](docs/MINIGAME_LOADING.zh-CN.md)。媒体使用原创示意图，视频真实解码另由自动化测试覆盖；新布局已通过真实窗口验收，包括准备 / 取消 / 全员就绪、大厅往返保值、1000×900 窄组件及 24 条长规则独立滚动。

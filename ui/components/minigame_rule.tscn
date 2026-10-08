@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+[ext_resource type="StyleBox" path="res://ui/theme/muted.tres" id="muted"]
+[node name="Rule" type="HBoxContainer"]
+size_flags_horizontal = 3
+theme = ExtResource("theme")
+theme_override_constants/separation = 14
+[node name="NumberFrame" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_styles/panel = ExtResource("muted")
+[node name="Number" type="Label" parent="NumberFrame"]
+layout_mode = 2
+theme_type_variation = &"PartyLabelMeta"
+text = "01"
+horizontal_alignment = 1
+vertical_alignment = 1
+[node name="Text" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PartyLabelBody"
+text = "在平台间跳跃，避开空隙与障碍。"
+autowrap_mode = 3

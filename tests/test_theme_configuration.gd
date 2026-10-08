@@ -38,7 +38,7 @@ const MAIN_SIZES := {
 	"Modal/Advanced/Title":"dialog_title_size", "Settings/Back":"action_size",
 	"Modal/Create/Title":"subheading_size", "Modal/Direct/Title":"compact_title_size",
 	"Modal/Preset/Title":"compact_title_size", "Modal/Profile/Title":"compact_title_size",
-	"Home/Profile/Hint":"micro_size", "Status/Protocol":"debug_size", "Status/Keys":"meta_size",
+	"Home/Profile/Hint":"micro_size", "Status/Protocol":"debug_size", "Status/Keys/Tab/Function":"meta_size",
 	"Rooms/Info0":"detail_size", "Guide/Measure":"note_size",
 	"Lobby/LobbySubtitle":"secondary_size", "Lobby/PlayerCount":"player_size"
 }

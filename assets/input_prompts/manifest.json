@@ -1,0 +1,938 @@
+{
+  "keyboard_a": {
+    "file": "keyboard_a_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_b": {
+    "file": "keyboard_b_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_c": {
+    "file": "keyboard_c_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_d": {
+    "file": "keyboard_d_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_e": {
+    "file": "keyboard_e_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f": {
+    "file": "keyboard_f_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_g": {
+    "file": "keyboard_g_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_h": {
+    "file": "keyboard_h_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_i": {
+    "file": "keyboard_i_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_j": {
+    "file": "keyboard_j_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_k": {
+    "file": "keyboard_k_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_l": {
+    "file": "keyboard_l_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_m": {
+    "file": "keyboard_m_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_n": {
+    "file": "keyboard_n_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_o": {
+    "file": "keyboard_o_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_p": {
+    "file": "keyboard_p_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_q": {
+    "file": "keyboard_q_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_r": {
+    "file": "keyboard_r_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_s": {
+    "file": "keyboard_s_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_t": {
+    "file": "keyboard_t_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_u": {
+    "file": "keyboard_u_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_v": {
+    "file": "keyboard_v_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_w": {
+    "file": "keyboard_w_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_x": {
+    "file": "keyboard_x_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_y": {
+    "file": "keyboard_y_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_z": {
+    "file": "keyboard_z_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_0": {
+    "file": "keyboard_0_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_1": {
+    "file": "keyboard_1_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_2": {
+    "file": "keyboard_2_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_3": {
+    "file": "keyboard_3_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_4": {
+    "file": "keyboard_4_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_5": {
+    "file": "keyboard_5_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_6": {
+    "file": "keyboard_6_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_7": {
+    "file": "keyboard_7_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_8": {
+    "file": "keyboard_8_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_9": {
+    "file": "keyboard_9_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f1": {
+    "file": "keyboard_f1_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f2": {
+    "file": "keyboard_f2_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f3": {
+    "file": "keyboard_f3_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f4": {
+    "file": "keyboard_f4_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f5": {
+    "file": "keyboard_f5_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f6": {
+    "file": "keyboard_f6_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f7": {
+    "file": "keyboard_f7_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f8": {
+    "file": "keyboard_f8_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f9": {
+    "file": "keyboard_f9_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f10": {
+    "file": "keyboard_f10_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f11": {
+    "file": "keyboard_f11_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_f12": {
+    "file": "keyboard_f12_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_alt": {
+    "file": "keyboard_alt_outline.svg",
+    "region": [
+      8.0,
+      14.0,
+      48.0,
+      36.0
+    ]
+  },
+  "keyboard_apostrophe": {
+    "file": "keyboard_apostrophe_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_arrow_down": {
+    "file": "keyboard_arrow_down_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_arrow_left": {
+    "file": "keyboard_arrow_left_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_arrow_right": {
+    "file": "keyboard_arrow_right_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_arrow_up": {
+    "file": "keyboard_arrow_up_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_asterisk": {
+    "file": "keyboard_asterisk_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_backspace": {
+    "file": "keyboard_backspace_outline.svg",
+    "region": [
+      8.0,
+      14.0,
+      48.0,
+      36.0
+    ]
+  },
+  "keyboard_bracket_close": {
+    "file": "keyboard_bracket_close_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_bracket_greater": {
+    "file": "keyboard_bracket_greater_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_bracket_less": {
+    "file": "keyboard_bracket_less_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_bracket_open": {
+    "file": "keyboard_bracket_open_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_capslock": {
+    "file": "keyboard_capslock_outline.svg",
+    "region": [
+      8.0,
+      14.0,
+      48.0,
+      35.0
+    ]
+  },
+  "keyboard_caret": {
+    "file": "keyboard_caret_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_colon": {
+    "file": "keyboard_colon_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_comma": {
+    "file": "keyboard_comma_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_command": {
+    "file": "keyboard_command_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_ctrl": {
+    "file": "keyboard_ctrl_outline.svg",
+    "region": [
+      8.0,
+      14.0,
+      48.0,
+      36.0
+    ]
+  },
+  "keyboard_delete": {
+    "file": "keyboard_delete_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_end": {
+    "file": "keyboard_end_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_enter": {
+    "file": "keyboard_enter_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_equals": {
+    "file": "keyboard_equals_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_escape": {
+    "file": "keyboard_escape_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_exclamation": {
+    "file": "keyboard_exclamation_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_home": {
+    "file": "keyboard_home_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_insert": {
+    "file": "keyboard_insert_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_minus": {
+    "file": "keyboard_minus_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_numlock": {
+    "file": "keyboard_numlock_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_numpad_enter": {
+    "file": "keyboard_numpad_enter_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_numpad_plus": {
+    "file": "keyboard_numpad_plus_outline.svg",
+    "region": [
+      15.0,
+      8.0,
+      34.0,
+      48.0
+    ]
+  },
+  "keyboard_option": {
+    "file": "keyboard_option_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_page_down": {
+    "file": "keyboard_page_down_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_page_up": {
+    "file": "keyboard_page_up_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_pause": {
+    "file": "keyboard_pause_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_period": {
+    "file": "keyboard_period_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_plus": {
+    "file": "keyboard_plus_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_printscreen": {
+    "file": "keyboard_printscreen_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_question": {
+    "file": "keyboard_question_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_quote": {
+    "file": "keyboard_quote_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_scroll_lock": {
+    "file": "keyboard_scroll_lock_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_semicolon": {
+    "file": "keyboard_semicolon_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_shift": {
+    "file": "keyboard_shift_outline.svg",
+    "region": [
+      8.0,
+      16.0,
+      48.0,
+      32.0
+    ]
+  },
+  "keyboard_slash_back": {
+    "file": "keyboard_slash_back_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_slash_forward": {
+    "file": "keyboard_slash_forward_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_space": {
+    "file": "keyboard_space_outline.svg",
+    "region": [
+      8.0,
+      18.0,
+      48.0,
+      28.0
+    ]
+  },
+  "keyboard_tab": {
+    "file": "keyboard_tab_outline.svg",
+    "region": [
+      8.0,
+      14.0,
+      48.0,
+      36.0
+    ]
+  },
+  "keyboard_tilde": {
+    "file": "keyboard_tilde_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_underscore": {
+    "file": "keyboard_underscore_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "keyboard_win": {
+    "file": "keyboard_win_outline.svg",
+    "region": [
+      8.0,
+      8.0,
+      48.0,
+      48.0
+    ]
+  },
+  "mouse_left": {
+    "file": "mouse_left_outline.svg",
+    "region": [
+      14.0,
+      10.0,
+      36.0,
+      44.0
+    ]
+  },
+  "mouse_right": {
+    "file": "mouse_right_outline.svg",
+    "region": [
+      14.0,
+      10.0,
+      36.0,
+      44.0
+    ]
+  },
+  "mouse_scroll": {
+    "file": "mouse_scroll_outline.svg",
+    "region": [
+      14.0,
+      10.0,
+      36.0,
+      44.0
+    ]
+  },
+  "mouse_scroll_up": {
+    "file": "mouse_scroll_up_outline.svg",
+    "region": [
+      14.0,
+      3.0,
+      36.0,
+      51.0
+    ]
+  },
+  "mouse_scroll_down": {
+    "file": "mouse_scroll_down_outline.svg",
+    "region": [
+      14.0,
+      10.0,
+      36.0,
+      44.0
+    ]
+  },
+  "mouse_side_back": {
+    "file": "mouse_side_back_outline.svg",
+    "region": [
+      9.0,
+      10.0,
+      47.0,
+      44.0
+    ]
+  },
+  "mouse_side_forward": {
+    "file": "mouse_side_forward_outline.svg",
+    "region": [
+      9.0,
+      10.0,
+      47.0,
+      44.0
+    ]
+  }
+}
