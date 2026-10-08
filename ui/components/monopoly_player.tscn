@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="Theme" path="res://ui/theme/party_theme.tres" id="theme"]
+[ext_resource type="StyleBox" path="res://ui/theme/card.tres" id="card"]
+[ext_resource type="Script" path="res://ui/components/monopoly_player.gd" id="script"]
+[node name="PlayerAssetCard" type="PanelContainer"]
+custom_minimum_size = Vector2(320, 86)
+theme = ExtResource("theme")
+theme_override_styles/panel = ExtResource("card")
+script = ExtResource("script")
+[node name="Content" type="Control" parent="."]
+custom_minimum_size = Vector2(316, 82)
+layout_mode = 2
+[node name="Stripe" type="ColorRect" parent="Content"]
+offset_right = 5.0
+anchor_bottom = 1.0
+mouse_filter = 2
+[node name="Number" type="Label" parent="Content"]
+offset_left = 16.0
+offset_top = 14.0
+offset_right = 60.0
+offset_bottom = 59.0
+theme_type_variation = &"PartyLabelSection"
+text = "01"
+[node name="Name" type="Label" parent="Content"]
+offset_left = 70.0
+offset_top = 8.0
+offset_right = 303.0
+offset_bottom = 39.0
+theme_type_variation = &"PartyLabelNote"
+text = "蓝莓 · 当前回合"
+text_overrun_behavior = 3
+[node name="Assets" type="Label" parent="Content"]
+offset_left = 70.0
+offset_top = 44.0
+offset_right = 303.0
+offset_bottom = 74.0
+theme_type_variation = &"PartyLabelMicro"
+text = "$ 12,800   /   3 处地产"
